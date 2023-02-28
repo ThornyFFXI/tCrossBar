@@ -6,7 +6,7 @@ Download the release zip for the Ashita client version you are currently using. 
 https://github.com/ThornyFFXI/tRenderer
 
 ## How To Load
-You must load the plugin tRenderer with **/load trenderer** prior to loading the addon tCrossBar with **/addon load tCrossBar**.  If you place these in your autoload file, you must ensure that both addons itself and trenderer are loaded prior to loading tHotBar.
+You must load the plugin tRenderer with **/load trenderer** prior to loading the addon tCrossBar with **/addon load tCrossBar**.  If you place these in your autoload file, you must ensure that both addons itself and trenderer are loaded prior to loading tCrossBar.
 
 ## Initial Setup
 Upon initial login, you can type **/tc** to open a configuration window and configure the addon.  Initial release only includes one layout, but future releases will provide more variations.  After selecting a layout, go to the second tab and select a device mapping.  At present, the dualsense mapping should be usable for most directinput controllers, the xbox mapping should be usable for most xinput controllers, and the switchpro mapping should only be used for a switch pro controller.  I am happy to work one on one with anyone who has a controller that needs specialized mapping to expand the amount of available mappings.  Once you've selected a mapping, you can use the third tab to tweak controls if you are not happy with the defaults.  Finally, close the configuration window and you're ready to get started.
@@ -33,22 +33,22 @@ Most of the options in the binding menu are self-explanatory, but scope may need
 ## Palettes
 If you want multiple palettes of macros for a specific job, you can use typed commands to create and change them.  By default, every job contains an undeletable palette named Base.  Every time you change to a job, you will load onto the Base palette for that job.  These commands can be used from within tCrossBar macros, so you can do things like the oldschool SMN layout where your avatar summon would also swap to a palette for that avatar.  You can manually cycle palettes by holding a combo key and pressing the matching palette key.  By default, this would be R2>R1 for next palette, and L2>L1 for previous palette.
 
-**/tb palette add [required: name]**
+**/tc palette add [required: name]**
 This will add a palette on your current job.
 
-**/tb palette remove [required: name]**
+**/tc palette remove [required: name]**
 This will delete a palette from your current job.  There is no way to recover bindings after doing this.
 
-**/tb palette list**
+**/tc palette list**
 This will print a list of palettes for your current job.
 
-**/tb palette change [required: name]**
+**/tc palette change [required: name]**
 This instantly swaps to a specific palette.
 
-**/tb palette next**
+**/tc palette next**
 Change to next palette.
 
-**/tb palette previous**
+**/tc palette previous**
 Change to previous palette.
 
 ## Custom Icons
@@ -58,7 +58,7 @@ You can create this directory if it does not yet exist.  All image bindings will
 **Ashita/config/addons/tCrossBar/resources/abilities/16.png**<br>
 and you would enter the binding as:<br>
 **abilities/16.png**<br>
-You can also use the game's item resources directly, as tHotBar will do when binding items.  To do this, simply enter the binding as **ITEM:28540** using the item id.  This can be found on FFXIAH.com or many other places.  This example would show a warp ring.
+You can also use the game's item resources directly, as tCrossBar will do when binding items.  To do this, simply enter the binding as **ITEM:28540** using the item id.  This can be found on FFXIAH.com or many other places.  This example would show a warp ring.
 
 ## Custom Layouts
 If you want to adjust the layouts, the same thing applies!  Copy the included layout from:<br>
