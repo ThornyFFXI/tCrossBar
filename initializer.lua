@@ -80,6 +80,7 @@ local defaultSettings = T{
     EnablePriority = true,
     ShowDoubleDisplay = true,
     SwapToSingleDisplay = false,
+    AllowInventoryPassthrough = true,
     Position = T{},
     ClickToActivate = true,
     ShowCost = true,

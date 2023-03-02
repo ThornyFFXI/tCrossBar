@@ -44,7 +44,7 @@ local function RecastToString(timer)
     end
     if (timer >= 216000) then
         local h = math.floor(timer / (216000));
-        local m = math.floor(timer / 3600);
+        local m = math.floor(math.fmod(timer, 216000) / 3600);
         return string.format('%i:%02i', h, m);
     elseif (timer >= 3600) then
         local m = math.floor(timer / 3600);

@@ -45,7 +45,7 @@ local function GetLayouts()
     end
 
     state.Layouts = layouts;
-    state.SelectedLayout = -1;
+    state.SelectedLayout = 1;
     for index,layout in ipairs(state.Layouts) do
         if (gSettings.Layout == layout) then
             state.SelectedLayout = index;
@@ -74,15 +74,11 @@ local function GetControllers()
     end
 
     state.Controllers = controllers;
-    state.SelectedController = -1;
+    state.SelectedController = 1;
     for index,controller in ipairs(state.Controllers) do
         if (gSettings.Controller == controller) then
             state.SelectedController = index;
         end
-    end
-
-    if (state.SelectedController == -1) then
-        error('Selected controller does not exist.');
     end
 end
 
@@ -206,8 +202,10 @@ function exposed:Render()
                     imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
                     CheckBox('Double Display', 'ShowDoubleDisplay');
                     imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
-                    CheckBox('SwapSingle', 'SwapToSingleDisplay');
+                    CheckBox('Swap Single', 'SwapToSingleDisplay');
                     imgui.ShowHelp('When enabled, pressing L2 or R2 will hide the double display and show only the relevant set.');
+                    CheckBox('Inventory Passthrough', 'AllowInventoryPassthrough');
+                    imgui.ShowHelp('When enabled, L2/R2/ZL/ZR will be passed to the game when inventory is the topmost menu.');
                     imgui.EndTabItem();
                 end                
                 if imgui.BeginTabItem('Binding##tCrossbarControlsBindingTab') then

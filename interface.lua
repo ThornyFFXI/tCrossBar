@@ -165,6 +165,7 @@ local function LoadLayout(interface, layoutName)
 
     for _,layoutType in ipairs(T{'SingleDisplay', 'DoubleDisplay'}) do
         local layout = interface.Layout[layoutType];
+        layout.IconFadeAlpha = interface.Layout.IconFadeAlpha;
         
         for _,primitiveInfo in ipairs(layout.Primitives) do
             if (primitiveInfo.File ~= nil) then

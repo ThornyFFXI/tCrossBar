@@ -8,6 +8,12 @@ local theme = {
     CrossPath = 'misc/cross.png',
     TriggerPath = 'misc/trigger.png',
 
+    --How transparent icons should become when on cooldown (0 = fully transparent, 1 = opaque)
+    IconFadeAlpha = 0.5,
+    
+    --Time, in seconds, to wait between advancing frames of skillchain animation.
+    SkillchainAnimationTime = 0.08,
+
     --This is checked the same way, and can contain any amount of frames.  Frames cycle back to first after last is completed.
     SkillchainAnimationPaths = T{
         'misc/crawl1.png',
@@ -174,12 +180,6 @@ local theme = {
 
         --Path to frame image
         FramePath = 'misc/frame.png',
-
-        --Level of transparency to be used for icons that are faded(due to recast down, or ability cost not met).
-        IconFadeAlpha = 0.5,
-
-        --Time, in seconds, to wait between advancing frames of skillchain animation.
-        SkillchainAnimationTime = 0.08,
 
         --Height of the full graphics object used to render all squares.  All squares *MUST* fully fit within this panel.
         PanelHeight = 168,
@@ -429,12 +429,6 @@ local theme = {
 
         --Path to frame image
         FramePath = 'misc/frame.png',
-
-        --Level of transparency to be used for icons that are faded(due to recast down, or ability cost not met).
-        IconFadeAlpha = 0.5,
-        
-        --Time, in seconds, to wait between advancing frames of skillchain animation.
-        SkillchainAnimationTime = 0.08,
 
         --Height of the full graphics object used to render all squares.  All squares *MUST* fully fit within this panel.
         PanelHeight = 168,

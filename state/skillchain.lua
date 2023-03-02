@@ -460,7 +460,10 @@ local function HandleActionPacket(actionPacket)
                             resonation.WindowClose = os.clock() + (9.8 - resonation.Depth);
                             resonationMap[targetIndex] = resonation;
                         end
-                    else
+                    
+                    --Some job abilities with built in damage use the same action type as weaponskill..
+                    --Message is 317 for jumps, others may be found in the future..
+                    elseif (action.Message ~= 317) then
                         local attributes = weaponskillResonationMap[actionPacket.Id];
                         if attributes then
                             local resonation = {};
@@ -530,7 +533,7 @@ local function HandleActionPacket(actionPacket)
                                 resonationMap[targetIndex] = resonation;
                                 chainAffinityMap[actionPacket.UserId] = nil;
                             end
-                        end          
+                        end
                     end
                 end
             end
@@ -563,7 +566,6 @@ ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function 
         bitOffset = 40;
         actionPacket.UserId = UnpackBits(32);
         local targetCount = UnpackBits(6);
-        --Unknown 4 bits
         bitOffset = bitOffset + 4;
         actionPacket.Type = UnpackBits(4);
         actionPacket.Id = UnpackBits(32);

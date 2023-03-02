@@ -154,7 +154,7 @@ local function RecastToString(timer)
     end
     if (timer >= 216000) then
         local h = math.floor(timer / (216000));
-        local m = math.floor(timer / 3600);
+        local m = math.floor(math.fmod(timer, 216000) / 3600);
         return string.format('%i:%02i', h, m);
     elseif (timer >= 3600) then
         local m = math.floor(timer / 3600);
@@ -177,6 +177,9 @@ end
 local function CheckAddendum(updater)
     local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetBuffs();
     for _,buff in ipairs(buffs) do
+        if (buff == 416) then
+            return true;
+        end
         if (buff == updater.AddendumBuffId) then
             return true;
         end
@@ -237,21 +240,29 @@ local function GetSpellAvailableGeneric(updater)
 end
 
 local function MainJobCheck(updater, jobData)
+    if (jobData.MainJobLevel < updater.MainRequirement) then
+        return false, false;
+    end
+
     local addendum = true;
     if (updater.MainAddendum) then
         addendum = CheckAddendum(updater);
     end
     
-    return (jobData.MainJobLevel >= updater.MainRequirement), addendum;
+    return true, addendum;
 end
 
 local function SubJobCheck(updater, jobData)
+    if (jobData.SubJobLevel < updater.SubRequirement) then
+        return false, false;
+    end
+
     local addendum = true;
     if (updater.SubAddendum) then
         addendum = CheckAddendum(updater);
     end
     
-    return (jobData.SubJobLevel >= updater.MainRequirement), addendum;
+    return true, addendum;
 end
 
 local function JobPointCheck(updater, jobData)
@@ -319,27 +330,42 @@ function Updater:Initialize(square, binding)
     --Set impossible requirement..
     self.MainRequirement = 999;
     self.SubRequirement  = 999;
-    self.AddendumBuff = (self.Resource.Type == 2) and 401 or 402;
     self.GetSpellAvailable = GetSpellAvailableGeneric;
 
     if bit.band(bit.rshift(self.Resource.JobPointMask, jobData.MainJob), 1) == 1 then
         self.MainJobCheck = JobPointCheck;
         self.MainRequirement = self.Resource.LevelRequired[jobData.MainJob + 1];
-        self.MainAddendum = ((jobData.MainJob == 19) and (bit.band(bit.rshift(self.Resource.Requirements, 2), 1) == 1));
+        self.MainAddendum = false; --Nothing requires addendum and JP..
     else
         self.MainJobCheck = MainJobCheck;
         self.MainRequirement = self.Resource.LevelRequired[jobData.MainJob + 1];
-        self.MainAddendum = ((jobData.MainJob == 19) and (bit.band(bit.rshift(self.Resource.Requirements, 2), 1) == 1));
+        if (self.MainRequirement == -1) then
+            self.MainRequirement = 999;
+        end
+        if ((jobData.MainJob == 20) and (bit.band(bit.rshift(self.Resource.Requirements, 2), 1) == 1)) then
+            self.MainAddendum = true;
+            self.AddendumBuffId = (self.Resource.Type == 1) and 401 or 402;
+        else
+            self.MainAddendum = false;
+        end
     end
     
     if bit.band(bit.rshift(self.Resource.JobPointMask, jobData.SubJob), 1) == 0 then
         self.SubRequirement = self.Resource.LevelRequired[jobData.SubJob + 1];
-        self.SubAddendum = ((jobData.SubJob == 19) and (bit.band(bit.rshift(self.Resource.Requirements, 2), 1) == 1));
+        if (self.SubRequirement == -1) then
+            self.SubRequirement = 999;
+        end
+        if ((jobData.SubJob == 20) and (bit.band(bit.rshift(self.Resource.Requirements, 2), 1) == 1)) then
+            self.SubAddendum = true;
+            self.AddendumBuffId = (self.Resource.Type == 1) and 401 or 402;
+        else
+            self.SubAddendum = false;
+        end
     end
 
-    if (bit.band(bit.rshift(self.Resource.Requirements, 2), 4) == 1) then
+    if (bit.band(bit.rshift(self.Resource.Requirements, 4), 1) == 1) then
         self.BuffCheck = CheckMeteor;
-    elseif (bit.band(bit.rshift(self.Resource.Requirements, 2), 3) == 1) then
+    elseif (bit.band(bit.rshift(self.Resource.Requirements, 3), 1) == 1) then
         self.BuffCheck = CheckTabula;
     elseif (T{ 736, 737, 738, 739, 740, 741, 742, 743, 744, 745, 746, 747, 748749, 750, 751, 752, 753 }:contains(self.Resource.Index)) then
         self.BuffCheck = CheckUnbridled;
@@ -354,7 +380,7 @@ function Updater:Tick()
     --RecastReady will hold number of charges for charged abilities.
     local recastReady, recastDisplay  = GetSpellRecast(self.Resource);
     local spellKnown, spellAvailable  = GetSpellAvailable(self);
-    local spellCostDisplay, costMet   = self:CostFunction();    
+    local spellCostDisplay, costMet   = self:CostFunction();
 
     if (gSettings.ShowHotkey) and (self.Binding.ShowHotkey) then
         self.StructPointer.Hotkey = self.Square.Hotkey;

@@ -25,6 +25,41 @@ local ComboMode = {
     RightTriggerDouble = 6
 };
 
+local bindCommands = {
+    'BindingUp',
+    'BindingDown',
+    'BindingNext',
+    'BindingPrevious',
+    'BindingConfirm',
+    'BindingCancel',
+    'BindingTab'
+};
+
+local inventoryPassControls = {
+    ['L2'] = true,
+    ['R2'] = true,
+    ['ZL'] = true,
+    ['ZR'] = true
+};
+
+local inventoryPassMenus = {
+    ['menu    inventor'] = true,
+    ['menu    bank    '] = true,
+};
+
+local pGameMenu = ashita.memory.find('FFXiMain.dll', 0, "8B480C85C974??8B510885D274??3B05", 16, 0);
+local function GetMenuName()
+    local subPointer = ashita.memory.read_uint32(pGameMenu);
+    local subValue = ashita.memory.read_uint32(subPointer);
+    if (subValue == 0) then
+        return '';
+    end
+    local menuHeader = ashita.memory.read_uint32(subValue + 4);
+    local menuName = ashita.memory.read_string(menuHeader + 0x46, 16);
+    return string.gsub(menuName, '\x00', '');
+end
+
+
 function controller:GetMacroState()
     return self.ComboState.CurrentMode;
 end
@@ -134,18 +169,14 @@ function controller:Tick()
     end
 end
 
-local bindCommands = {
-    'BindingUp',
-    'BindingDown',
-    'BindingNext',
-    'BindingPrevious',
-    'BindingConfirm',
-    'BindingCancel',
-    'BindingTab'
-};
-
 function controller:Trigger(button, pressed)
     local controls = gSettings.Controls[self.Layout.Name];
+
+    if (gSettings.AllowInventoryPassthrough == true) then
+        if inventoryPassControls[button] == true and inventoryPassMenus[GetMenuName()] == true then
+            return false;
+        end
+    end
 
     --Combo buttons are always monitored.
     if (button == controls.ComboLeft) then
