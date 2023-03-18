@@ -95,6 +95,7 @@ local defaultSettings = T{
     HideWhileZoning = true,
     HideWhileCutscene = true,
     HideWhileMap = true,
+    HideWithoutCombo = false,
 };
 
 local controllerConfigFolder = string.format('%sconfig/addons/%s/resources/controllers', AshitaCore:GetInstallPath(), addon.name);

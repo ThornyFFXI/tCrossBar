@@ -174,6 +174,12 @@ function SquareManager:GetHidden()
         return true;
     end
 
+    if (gSettings.HideWithoutCombo) then
+        if (gController:GetMacroState() == 0) then
+            return true
+        end
+    end
+
     if (gSettings.HideWhileZoning) then
         if (gPlayer:GetLoggedIn() == false) then
             return true;

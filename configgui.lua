@@ -167,7 +167,9 @@ function exposed:Render()
                     CheckBox('During Cutscenes', 'HideWhileCutscene');
                     imgui.ShowHelp('Hides UI while the game event system is active.');
                     CheckBox('While Map Open', 'HideWhileMap');
-                    imgui.ShowHelp('Hides UI while the map is the topmost menu.');                    
+                    imgui.ShowHelp('Hides UI while the map is the topmost menu.');
+                    CheckBox('Without Combo Held', 'HideWithoutCombo');
+                    imgui.ShowHelp('Hides UI when a Combo Key isn\'t active.');                
                     imgui.EndTabItem();
                 end
                 if imgui.BeginTabItem('Controller##tCrossbarControlsAppearanceTab') then
