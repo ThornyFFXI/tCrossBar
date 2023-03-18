@@ -236,7 +236,7 @@ function SquareManager:Tick()
     self.SingleDisplay = false;
     self.DoubleDisplay = false;
 
-    if (self.SingleStruct == nil) or (self.DoubleStruct == nil) or (self:GetHidden()) then
+    if (self:GetHidden()) then
         self:HidePrimitives(self.SinglePrimitives);
         self:HidePrimitives(self.DoublePrimitives);
         return;
@@ -252,8 +252,12 @@ function SquareManager:Tick()
         if (gSettings.ShowDoubleDisplay) then
             self.DoubleDisplay = true;
         end
-    elseif (macroState < 3) and (gSettings.ShowDoubleDisplay) and (gSettings.SwapToSingleDisplay == false) then
-        self.DoubleDisplay = true;
+    elseif (macroState < 3) then
+        if (gSettings.SwapToSingleDisplay) then
+            self.SingleDisplay = true;
+        else
+            self.DoubleDisplay = true;
+        end
     else
         self.SingleDisplay = true;
     end
