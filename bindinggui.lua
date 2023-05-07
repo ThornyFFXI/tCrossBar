@@ -402,10 +402,14 @@ end
 
 Update.Ability = function(index)
     local res = state.ActionResources[index];
-    if (res.Targets == 1) then
-        state.MacroText = { string.format('/ja \"%s\" <me>', res.Name[1]) };
+    if (bit.band(res.Targets, 0xFC) ~= 0) then
+        if (gSettings.DefaultSelectTarget) then
+            state.MacroText = { string.format('/ja \"%s\" <st>', res.Name[1]) };
+        else
+            state.MacroText = { string.format('/ja \"%s\" <t>', res.Name[1]) };
+        end
     else
-        state.MacroText = { string.format('/ja \"%s\" <t>', res.Name[1]) };
+        state.MacroText = { string.format('/ja \"%s\" <me>', res.Name[1]) };
     end
     state.MacroLabel = { res.Name[1] };
     if ((res.RecastTimerId == 0) or (res.RecastTimerId == 254)) then
@@ -418,7 +422,11 @@ Update.Ability = function(index)
 end
 
 Update.Command = function(index)
-    state.MacroText = { '/attack <t>' };
+    if (gSettings.DefaultSelectTarget) then
+        state.MacroText = { '/attack <st>' };
+    else
+        state.MacroText = { '/attack <t>' };
+    end
     state.MacroLabel = { 'Attack' };
     state.MacroImage = { 'misc/command.png' };
     state.CostOverride = { '' };
@@ -435,10 +443,14 @@ end
 
 Update.Item = function(index)
     local res = state.ActionResources[index];
-    if (res.Targets == 1) then
-        state.MacroText = { string.format('/item \"%s\" <me>', res.Name[1]) };
+    if (bit.band(res.Targets, 0xFC) ~= 0) then
+        if (gSettings.DefaultSelectTarget) then
+            state.MacroText = { string.format('/item \"%s\" <st>', res.Name[1]) };
+        else
+            state.MacroText = { string.format('/item \"%s\" <t>', res.Name[1]) };
+        end
     else
-        state.MacroText = { string.format('/item \"%s\" <t>', res.Name[1]) };
+        state.MacroText = { string.format('/item \"%s\" <me>', res.Name[1]) };
     end
     state.MacroLabel = { res.Name[1] };
     state.MacroImage = { string.format('ITEM:%u', res.Id) };
@@ -448,10 +460,14 @@ end
 
 Update.Spell = function(index)
     local res = state.ActionResources[index];
-    if (res.Targets == 1) then
-        state.MacroText = { string.format('/ma \"%s\" <me>', res.Name[1]) };
+    if (bit.band(res.Targets, 0xFC) ~= 0) then
+        if (gSettings.DefaultSelectTarget) then
+            state.MacroText = { string.format('/ma \"%s\" <st>', res.Name[1]) };
+        else
+            state.MacroText = { string.format('/ma \"%s\" <t>', res.Name[1]) };
+        end
     else
-        state.MacroText = { string.format('/ma \"%s\" <t>', res.Name[1]) };
+        state.MacroText = { string.format('/ma \"%s\" <me>', res.Name[1]) };
     end
     state.MacroLabel = { res.Name[1] };
     state.MacroImage = { string.format('spells/%u.png', res.Index) };
@@ -461,11 +477,7 @@ end
 
 Update.Trust = function(index)
     local res = state.ActionResources[index];
-    if (res.Targets == 1) then
-        state.MacroText = { string.format('/ma \"%s\" <me>', res.Name[1]) };
-    else
-        state.MacroText = { string.format('/ma \"%s\" <t>', res.Name[1]) };
-    end
+    state.MacroText = { string.format('/ma \"%s\" <me>', res.Name[1]) };
     state.MacroLabel = { res.Name[1] };
     state.MacroImage = { string.format('spells/%u.png', res.Index) };
     state.CostOverride = { '' };
@@ -474,10 +486,14 @@ end
 
 Update.Weaponskill = function(index)
     local res = state.ActionResources[index];
-    if (res.Targets == 1) then
-        state.MacroText = { string.format('/ws \"%s\" <me>', res.Name[1]) };
+    if (bit.band(res.Targets, 0xFC) ~= 0) then
+        if (gSettings.DefaultSelectTarget) then
+            state.MacroText = { string.format('/ws \"%s\" <st>', res.Name[1]) };
+        else
+            state.MacroText = { string.format('/ws \"%s\" <t>', res.Name[1]) };
+        end
     else
-        state.MacroText = { string.format('/ws \"%s\" <t>', res.Name[1]) };
+        state.MacroText = { string.format('/ws \"%s\" <me>', res.Name[1]) };
     end
     state.MacroLabel = { res.Name[1] };
     state.MacroImage = { wsmap[res.Id] or '' };

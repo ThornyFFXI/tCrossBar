@@ -206,6 +206,8 @@ function exposed:Render()
                     imgui.ShowHelp('When enabled, pressing L2 or R2 will show only the relevant set instead of both sets.');
                     CheckBox('Inventory Passthrough', 'AllowInventoryPassthrough');
                     imgui.ShowHelp('When enabled, L2/R2/ZL/ZR will be passed to the game when inventory is the topmost menu.');
+                    CheckBox('Default To <st>', 'DefaultSelectTarget');
+                    imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');
                     imgui.EndTabItem();
                 end                
                 if imgui.BeginTabItem('Binding##tCrossbarControlsBindingTab') then
