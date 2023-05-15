@@ -104,7 +104,7 @@ local function ManaCost(resource)
     local cost = resource.ManaCost;
 
     --White magic
-    if (resource.Type == 2) then
+    if (resource.Type == 1) then
         local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetBuffs();
         local artsMod, penuryMod;
         for _,buff in ipairs(buffs) do
@@ -124,7 +124,7 @@ local function ManaCost(resource)
             cost = math.ceil(cost * artsMod);
         end
     --Black magic
-    elseif (resource.Type == 3) then
+    elseif (resource.Type == 2) then
         local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetBuffs();
         local artsMod, penuryMod;
         for _,buff in ipairs(buffs) do
