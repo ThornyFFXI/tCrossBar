@@ -21,7 +21,7 @@
 
 addon.name      = 'tCrossBar';
 addon.author    = 'Thorny';
-addon.version   = '1.06';
+addon.version   = '1.07';
 addon.desc      = 'Creates a controller scheme for activating macros, and provides visual aids for your macroed abilities.';
 addon.link      = 'https://ashitaxi.com/';
 

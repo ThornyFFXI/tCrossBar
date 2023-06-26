@@ -87,6 +87,13 @@ local skillchainMessageIds = {
     [770] = Resonation.Umbra
 };
 
+local weaponskillMessageIds = T{
+    103, --"${actor} uses ${weapon_skill}.${lb}${target} recovers ${number} HP."
+    185, --"${actor} uses ${weapon_skill}.${lb}${target} takes ${number} points of damage."
+    187, --"${actor} uses ${weapon_skill}.${lb}${number} HP drained from ${target}."
+    238  --"${actor} uses ${weapon_skill}.${lb}${target} recovers ${number} HP."
+};
+
 local immanenceMap = {};
 local immanenceResonationMap = {
     [144] = T{ Resonation.Liquefaction }, --Fire
@@ -461,9 +468,7 @@ local function HandleActionPacket(actionPacket)
                             resonationMap[targetIndex] = resonation;
                         end
                     
-                    --Some job abilities with built in damage use the same action type as weaponskill..
-                    --Message is 317 for jumps, others may be found in the future..
-                    elseif (action.Message ~= 317) then
+                    elseif weaponskillMessageIds:contains(action.Message) then
                         local attributes = weaponskillResonationMap[actionPacket.Id];
                         if attributes then
                             local resonation = {};
