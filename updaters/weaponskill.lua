@@ -121,7 +121,7 @@ function Updater:Tick()
     end
 
     if (gSettings.ShowCost) and (self.Binding.ShowCost) then
-        self.StructPointer.Cost = self.CostFunction();
+        self.StructPointer.Cost = self:CostFunction();
     else
         self.StructPointer.Cost = '';
     end
