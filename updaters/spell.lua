@@ -266,7 +266,7 @@ local function SubJobCheck(updater, jobData)
 end
 
 local function JobPointCheck(updater, jobData)
-    return (gPlayer:GetJobPointTotal(jobData.MainJob) >= updater.MainRequirement);
+    return (gPlayer:GetJobPointTotal(jobData.MainJob) >= updater.MainRequirement), true;
 end
 
 local function GetSpellAvailable(updater)
