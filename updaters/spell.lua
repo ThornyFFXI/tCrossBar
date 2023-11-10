@@ -1,5 +1,8 @@
 local Updater = {};
 
+local inventory    = require('state.inventory');
+local player       = require('state.player');
+local skillchain   = require('state.skillchain');
 local ninjutsuCost = T{
     [318] = T{ 2553, 2972 }, --Monomi: Ichi
     [319] = T{ 2555, 2973 }, --Aisha: Ichi
@@ -71,11 +74,11 @@ local function ItemCost(updater, items)
 
     local itemCount = 0;
     for _,item in ipairs(items) do
-        local itemData = gInventory:GetItemData(item);
+        local itemData = inventory:GetItemData(item);
         if (itemData ~= nil) then
             for _,itemEntry in ipairs(itemData.Locations) do
                 if (updater.Containers:contains(itemEntry.Container)) then
-                    itemCount = itemCount + gInventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
                 end
             end
         end
@@ -87,11 +90,11 @@ end
 local function NinjutsuCost(updater, items)
     local itemCount = 0;
     for _,item in ipairs(items) do
-        local itemData = gInventory:GetItemData(item);
+        local itemData = inventory:GetItemData(item);
         if (itemData ~= nil) then
             for _,itemEntry in ipairs(itemData.Locations) do
                 if (itemEntry.Container == 0) then
-                    itemCount = itemCount + gInventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
                 end
             end
         end
@@ -222,11 +225,11 @@ local function CheckUnbridled(updater)
 end
 
 local function GetSpellAvailableGeneric(updater)
-    if not gPlayer:KnowsSpell(updater.Resource.Index) then
+    if not player:KnowsSpell(updater.Resource.Index) then
         return false, false;
     end
 
-    local jobData = gPlayer:GetJobData();
+    local jobData = player:GetJobData();
     if (jobData.MainJobLevel < updater.MainRequirement) and (jobData.SubJobLevel < updater.SubRequirement) then
         return false, false;
     end
@@ -266,15 +269,15 @@ local function SubJobCheck(updater, jobData)
 end
 
 local function JobPointCheck(updater, jobData)
-    return (gPlayer:GetJobPointTotal(jobData.MainJob) >= updater.MainRequirement), true;
+    return (player:GetJobPointTotal(jobData.MainJob) >= updater.MainRequirement), true;
 end
 
 local function GetSpellAvailable(updater)
-    if not gPlayer:KnowsSpell(updater.Resource.Index) then
+    if not player:KnowsSpell(updater.Resource.Index) then
         return false, false;
     end
 
-    local jobData = gPlayer:GetJobData();
+    local jobData = player:GetJobData();
     local mainAvailable, mainAddendum = updater.MainJobCheck(updater, jobData);
     local subAvailable, subAddendum = SubJobCheck(updater, jobData);
 
@@ -318,7 +321,7 @@ function Updater:Initialize(element, binding)
         self.CostFunction = ManaCost:bind1(self.Resource);
     end
 
-    local jobData = gPlayer:GetJobData();
+    local jobData = player:GetJobData();
     
     --Set impossible requirement..
     self.MainRequirement = 999;
@@ -405,12 +408,12 @@ function Updater:UpdateSkillchain()
         return;
     end
 
-    local resonation, skillchain = gSkillchain:GetSkillchainBySpell(target, self.Resource.Id);
+    local resonation, result = skillchain:GetSkillchainBySpell(target, self.Resource.Id);
     if (resonation == nil) or (resonation.WindowClose < os.clock()) then
         return;
     end
 
-    return { Name=skillchain, Open=(os.clock() > resonation.WindowOpen) };
+    return { Name=result, Open=(os.clock() > resonation.WindowOpen) };
 end
 
 return Updater;

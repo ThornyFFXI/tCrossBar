@@ -1,5 +1,9 @@
 local Updater = {};
 
+local inventory    = require('state.inventory');
+local player       = require('state.player');
+local skillchain   = require('state.skillchain');
+
 local function ItemCost(updater, items)
     local containers = updater.Containers;
     if (updater.Containers == nil) then
@@ -25,11 +29,11 @@ local function ItemCost(updater, items)
 
     local itemCount = 0;
     for _,item in ipairs(items) do
-        local itemData = gInventory:GetItemData(item);
+        local itemData = inventory:GetItemData(item);
         if (itemData ~= nil) then
             for _,itemEntry in ipairs(itemData.Locations) do
                 if (updater.Containers:contains(itemEntry.Container)) then
-                    itemCount = itemCount + gInventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
                 end
             end
         end
@@ -64,7 +68,7 @@ function Updater:Destroy()
 end
 
 function Updater:Tick()
-    local known = gPlayer:KnowsAbility(self.Resource.Id);
+    local known = player:KnowsAbility(self.Resource.Id);
     local activeSkillchain = self:UpdateSkillchain();
     
     self.State.Available = known;
@@ -93,12 +97,12 @@ function Updater:UpdateSkillchain()
         return;
     end
 
-    local resonation, skillchain = gSkillchain:GetSkillchain(target, self.Resource.Id);
+    local resonation, result = skillchain:GetSkillchain(target, self.Resource.Id);
     if (resonation == nil) or (resonation.WindowClose < os.clock()) then
         return;
     end
 
-    return { Name=skillchain, Open=(os.clock() > resonation.WindowOpen) };
+    return { Name=result, Open=(os.clock() > resonation.WindowOpen) };
 end
 
 return Updater;

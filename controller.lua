@@ -59,7 +59,6 @@ local function GetMenuName()
     return string.gsub(menuName, '\x00', '');
 end
 
-
 function controller:GetMacroState()
     return self.ComboState.CurrentMode;
 end

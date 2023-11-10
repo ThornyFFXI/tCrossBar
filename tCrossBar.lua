@@ -26,10 +26,12 @@ addon.desc      = 'Creates a controller scheme for activating macros, and provid
 addon.link      = 'https://ashitaxi.com/';
 
 require('common');
-local gdi = require('gdifonts.include');
+local gdi        = require('gdifonts.include');
+local clickTarget;
 
 ashita.events.register('load', 'load_cb', function ()
     gdi:set_auto_render(false);
+    require('initialize');
 end);
 
 --[[
@@ -67,14 +69,38 @@ ashita.events.register('command', 'command_cb', function (e)
 end);
 
 ashita.events.register('d3d_present', 'd3d_present_cb', function ()
-
     gController:Tick();
+    
+    --Returns a display type if in drag mode.
+    local renderTarget = gConfigGUI:Render();
 
-    gBindingGUI:Render();
-    
-    gConfigGUI:Render();
-    
-    if (gInterface ~= nil) then
-        gInterface:Tick();
+    --Returns a macro type if in binding mode.
+    local macroState   = gBindingGUI:Render();
+
+    if (renderTarget == nil) then
+        renderTarget = gSingleDisplay;
+        macroState = macroState or gController:GetMacroState();
+        if (macroState == 0) then
+            if (gSettings.ShowDoubleDisplay) then
+                renderTarget = gDoubleDisplay;
+            end
+        elseif (macroState < 3) then
+            if (gSettings.SwapToSingleDisplay == false) then
+                renderTarget = gDoubleDisplay;
+            end
+        end
+        clickTarget = renderTarget;
+    else
+        clickTarget = nil;
     end
+
+    renderTarget:Render();
+end);
+
+ashita.events.register('mouse', 'mouse_cb', function (e)
+    if gConfigGUI:HandleMouse(e) then
+        return;
+    end
+
+    clickTarget:HandleMouse(e);
 end);

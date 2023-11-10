@@ -1,5 +1,8 @@
 local header = { 1.0, 0.75, 0.55, 1.0 };
+local lastPositionX, lastPositionY;
 local state = {
+    DragMode = 'Disabled',
+    DragTarget = '',
     IsOpen = { false }
 };
 local validControls = T{
@@ -103,7 +106,46 @@ local function ControllerBindingCombo(member, helpText)
     imgui.ShowHelp(helpText);
 end
 
+local function HitTest(layout, e)
+    local minX = gSettings.Position[gSettings.Layout][state.DragTarget]
+
+end
+
 local exposed = {};
+
+function exposed:HandleMouse(e)
+    if (state.IsOpen[1] == false) or (state.DragMode == 'Disabled') then
+        return false;
+    end
+    
+    if state.DragMode == 'Active' then
+        local pos = state.DragTarget:GetPosition();
+        local newX = pos[1] + (e.x - lastPositionX);
+        local newY = pos[2] + (e.y - lastPositionY);
+        state.DragTarget:SetPosition(newX, newY);
+        lastPositionX = e.x;
+        lastPositionY = e.y;
+        if (e.message == 514) or (bit.band(ffi.C.GetKeyState(0x10), 0x8000) == 0) then
+            state.DragMode = 'Disabled';
+            e.blocked = true;
+        end
+        return true;
+    end
+
+    if (state.DragMode == 'Pending') then
+        if e.message == 513 then
+            if state.DragTarget:HitTest(e.x, e.y) then
+                state.DragMode = 'Active';
+                lastPositionX = e.x;
+                lastPositionY = e.y;
+                e.blocked = true;
+            end
+        end
+        return true;
+    end
+
+    return false;
+end
 
 function exposed:Render()
     if (state.IsOpen[1]) then
@@ -223,6 +265,10 @@ function exposed:Render()
             end
             imgui.End();
         end
+
+        if (state.DragMode ~= 'Disabled') then
+            return state.DragTarget;
+        end
     end
 end
 
@@ -231,6 +277,7 @@ function exposed:Show()
     GetLayouts();
     state.ForceTab = true;
     state.IsOpen = { true };
+    state.DragMode = 'Disabled';
 end
 
 return exposed;

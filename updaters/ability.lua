@@ -1,7 +1,9 @@
 local Updater = {};
 
+local inventory            = require('state.inventory');
+local player               = require('state.player');
 local AbilityRecastPointer = ashita.memory.find('FFXiMain.dll', 0, '894124E9????????8B46??6A006A00508BCEE8', 0x19, 0);
-AbilityRecastPointer = ashita.memory.read_uint32(AbilityRecastPointer);
+AbilityRecastPointer       = ashita.memory.read_uint32(AbilityRecastPointer);
 
 local function ItemCost(updater, items)
     local containers = updater.Containers;
@@ -28,11 +30,11 @@ local function ItemCost(updater, items)
 
     local itemCount = 0;
     for _,item in ipairs(items) do
-        local itemData = gInventory:GetItemData(item);
+        local itemData = inventory:GetItemData(item);
         if (itemData ~= nil) then
             for _,itemEntry in ipairs(itemData.Locations) do
                 if (updater.Containers:contains(itemEntry.Container)) then
-                    itemCount = itemCount + gInventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
                 end
             end
         end
@@ -294,7 +296,7 @@ end
 function Updater:Tick()
     --RecastReady will hold number of charges for charged abilities.
     local recastReady, recastDisplay  = self.RecastFunction(self.Resource);
-    local abilityAvailable            = gPlayer:KnowsAbility(self.Resource.Id);
+    local abilityAvailable            = player:KnowsAbility(self.Resource.Id);
     local abilityCostDisplay, costMet = self:CostFunction(recastReady);
 
     self.State.Available = abilityAvailable;

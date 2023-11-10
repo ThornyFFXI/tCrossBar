@@ -5,34 +5,12 @@ function Error(text)
     print(chat.header(addon.name) .. highlighted .. '\30\01');
 end
 
+
 function Message(text)
     local color = ('\30%c'):format(106);
     local highlighted = color .. string.gsub(text, '$H', '\30\01\30\02');
     highlighted = string.gsub(highlighted, '$R', '\30\01' .. color);
     print(chat.header(addon.name) .. highlighted .. '\30\01');
-end
-
-function GetImagePath(image, default)
-    if (string.sub(image, 1, 5) == 'ITEM:') then
-        return image;
-    end
-    
-    local potentialPaths = T{
-        image,
-        string.format('%sconfig/addons/%s/resources/%s', AshitaCore:GetInstallPath(), addon.name, image),
-        string.format('%saddons/%s/resources/%s', AshitaCore:GetInstallPath(), addon.name, image),
-        default or '',
-        string.format('%sconfig/addons/%s/resources/misc/unknown.png', AshitaCore:GetInstallPath(), addon.name),
-        string.format('%saddons/%s/resources/misc/unknown.png', AshitaCore:GetInstallPath(), addon.name),
-    };
-
-    for _,path in ipairs(potentialPaths) do
-        if (path ~= '') and (ashita.fs.exists(path)) then
-            return path;
-        end
-    end
-
-    return nil;
 end
 
 function LoadFile_s(filePath)
@@ -57,22 +35,23 @@ function LoadFile_s(filePath)
     return output;
 end
 
---Set up globals.. order matters here, don't mess with it.
-ffi           = require('ffi');
-imgui         = require('imgui');
-settings      = require('settings');
-gController   = require('controller');
-gInterface    = require('interface');
-gBindings     = require('bindings');
-gInventory    = require('state.inventory');
-gPlayer       = require('state.player');
-gSkillchain   = require('state.skillchain');
-gMouseHandler = require('mousehandler');
-gBindingGUI   = require('bindinggui');
-gConfigGUI    = require('configgui');
+--Initialize Classes..
+require('state.inventory');
+require('state.player');
+require('state.skillchain');
 
+--Initialize Globals..
+gTextureCache    = require('texturecache');
+gBindingGUI      = require('bindinggui');
+gConfigGUI       = require('configgui');
+gController      = require('controller');
+gSingleDisplay   = require('singledisplay');
+gDoubleDisplay   = require('doubledisplay');
+
+settings         = require('settings');
 local defaultSettings = T{
     Layout = 'classic',
+    Scale = 1.0,
     Controller = 'dualsense',
     BindMenuTimer = 1,
     TapTimer = 0.4,
@@ -117,7 +96,6 @@ gInterface:Initialize(gSettings.Layout);
 settings.register('settings', 'settings_update', function(newSettings)
     gSettings = newSettings;
     gController:SetLayout(gSettings.Controller);
-    gInterface:Initialize(gSettings.Layout);
 end);
 
 return true;

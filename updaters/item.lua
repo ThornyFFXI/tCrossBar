@@ -1,6 +1,7 @@
 local Updater = {};
 
-local vanaOffset = 0x3C307D70;
+local inventory   = require('state.inventory');
+local vanaOffset  = 0x3C307D70;
 local timePointer = ashita.memory.find('FFXiMain.dll', 0, '8B0D????????8B410C8B49108D04808D04808D04808D04C1C3', 2, 0);
 
 local function GetTimeUTC()
@@ -31,11 +32,11 @@ end
 local function GetItemRecast(itemId)
     local containers = T{ 0, 3 };
     local itemCount = 0;
-    local itemData = gInventory:GetItemData(itemId);
+    local itemData = inventory:GetItemData(itemId);
     if (itemData ~= nil) then
         for _,itemEntry in ipairs(itemData.Locations) do
             if (containers:contains(itemEntry.Container)) then
-                itemCount = itemCount + gInventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
             end
         end
     end
@@ -46,13 +47,13 @@ end
 local function GetEquipmentRecast(itemResource)
     local containers = T{ 0, 8, 10, 11, 12, 13, 14, 15, 16 };
     local itemCount = 0;
-    local itemData = gInventory:GetItemData(itemResource.Id);
+    local itemData = inventory:GetItemData(itemResource.Id);
     local lowestRecast = -1;
     if (itemData ~= nil) then
         local currentTime = GetTimeUTC();
         for _,itemEntry in ipairs(itemData.Locations) do
             if (containers:contains(itemEntry.Container)) then
-                local item = gInventory:GetItemTable(itemEntry.Container, itemEntry.Index);
+                local item = inventory:GetItemTable(itemEntry.Container, itemEntry.Index);
                 local useTime = (struct.unpack('L', item.Extra, 5) + vanaOffset) - currentTime;
                 if (useTime < 0) then
                     useTime = 0;

@@ -1,5 +1,7 @@
 local Updater = {};
 
+local inventory = require('state.inventory');
+
 local function ItemCost(updater, items)
     local containers = updater.Containers;
     if (updater.Containers == nil) then
@@ -25,11 +27,11 @@ local function ItemCost(updater, items)
 
     local itemCount = 0;
     for _,item in ipairs(items) do
-        local itemData = gInventory:GetItemData(item);
+        local itemData = inventory:GetItemData(item);
         if (itemData ~= nil) then
             for _,itemEntry in ipairs(itemData.Locations) do
                 if (updater.Containers:contains(itemEntry.Container)) then
-                    itemCount = itemCount + gInventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
                 end
             end
         end
