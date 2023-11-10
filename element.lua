@@ -47,8 +47,8 @@ function Element:New(hotkey)
     o.State = {
         Available = false,
         Ready = false,
-        Cost = nil,
-        Recast = nil,
+        Cost = '',
+        Recast = '',
         Skillchain = nil,
     };
     local updater = updaters.Empty;
@@ -80,8 +80,8 @@ end
 
 function Element:Render()
     self.Updater:Tick();
-    --Ugh..
-
+    
+    
 end
 
 function Element:UpdateBinding(binding)
