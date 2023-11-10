@@ -98,7 +98,7 @@ function Updater:UpdateSkillchain()
         return;
     end
 
-    return { Skillchain=skillchain, Open=(os.clock() > resonation.WindowOpen) };
+    return { Name=skillchain, Open=(os.clock() > resonation.WindowOpen) };
 end
 
 return Updater;
