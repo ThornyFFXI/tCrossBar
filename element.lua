@@ -10,28 +10,47 @@ local updaters     = {
 
 local function DoMacro(macro)
     for _,line in ipairs(macro) do
+        local command, waitTime;
         if (string.sub(line, 1, 6) == '/wait ') then
-            local waitTime = tonumber(string.sub(line, 7));
-            if type(waitTime) == 'number' then
-                if (waitTime < 0.1) then
-                    coroutine.sleepf(1);
-                else
-                    coroutine.sleep(waitTime);
+            waitTime = tonumber(string.sub(line, 7));
+        else
+            command = line;
+            local waitStart, waitEnd = string.find(line, ' <wait %d*%.?%d+>');
+            if (waitStart ~= nil) and (waitEnd == string.len(line)) then
+                waitTime = tonumber(string.match(line, ' <wait (%d*%.?%d+)>'));
+                if (type(waitTime) == 'number') then
+                    command = string.sub(line, 1, waitStart - 1);
                 end
             end
-        else
-            AshitaCore:GetChatManager():QueueCommand(-1, line);
+        end
+
+        if command then
+            AshitaCore:GetChatManager():QueueCommand(-1, command);
+        end
+        
+        if type(waitTime) == 'number' then
+            if (waitTime < 0.1) then
+                coroutine.sleepf(1);
+            else
+                coroutine.sleep(waitTime);
+            end
         end
     end
 end
 
-local Square = {};
+local Element = {};
 
-function Square:New(structPointer, hotkey)
+function Element:New(hotkey)
     local o = {};
     setmetatable(o, self);
     self.__index = self;
-    o.StructPointer = structPointer;
+    o.State = {
+        Available = false,
+        Ready = false,
+        Cost = nil,
+        Recast = nil,
+        Skillchain = nil,
+    };
     local updater = updaters.Empty;
     o.Activation = 0;
     o.Hotkey = hotkey;
@@ -40,26 +59,32 @@ function Square:New(structPointer, hotkey)
     return o;
 end
 
-function Square:Activate()
+function Element:Activate()
     self.Activation = os.clock() + 0.25;
     if (self.Binding ~= nil) then
-        DoMacro:bind1(self.Binding.Macro):oncef(0);
+        local macroContainer = T{};
+        for _,entry in ipairs(self.Binding.Macro) do
+            macroContainer:append(entry);
+        end
+        DoMacro:bind1(macroContainer):oncef(0);
     end
 end
 
-function Square:Bind()
+function Element:Bind()
     gBindingGUI:Show(self.Hotkey, self.Binding);
 end
 
-function Square:Destroy()
+function Element:Destroy()
     self.Updater:Destroy();
 end
 
-function Square:Update()
+function Element:Render()
     self.Updater:Tick();
+    --Ugh..
+
 end
 
-function Square:UpdateBinding(binding)
+function Element:UpdateBinding(binding)
     if (binding == self.Binding) then
         return;
     end
@@ -81,4 +106,4 @@ function Square:UpdateBinding(binding)
     self.Updater:Initialize(self, self.Binding);
 end
 
-return Square;
+return Element;

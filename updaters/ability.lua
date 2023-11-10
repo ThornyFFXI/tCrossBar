@@ -220,16 +220,9 @@ function Updater:New()
     return o;
 end
 
-function Updater:Initialize(square, binding)
-    self.Binding       = binding;
-    self.Square        = square;
-    self.StructPointer = square.StructPointer;
-    self.Resource      = AshitaCore:GetResourceManager():GetAbilityById(self.Binding.Id);
-
-    local layout = gInterface:GetSquareManager().Layout;
-    self.IconImage = GetImagePath(self.Binding.Image);
-    self.CrossImage = layout.CrossPath;
-    self.TriggerImage = layout.TriggerPath;
+function Updater:Initialize(element, binding)
+    self.Resource      = AshitaCore:GetResourceManager():GetAbilityById(binding.Id);
+    self.State         = element.State;
     
     --Set cost and recast function for charge-based abilities.
     if (self.Resource.RecastTimerId == 102) then
@@ -270,18 +263,18 @@ function Updater:Initialize(square, binding)
         [825] = 2,
         [826] = 3
     };
-    local flourish = flourishes[self.Binding.Id];
+    local flourish = flourishes[binding.Id];
 
     --Custom (for use with jugs and such)
-    if (self.Binding.CostOverride) then
-        self.CostFunction = ItemCost:bind2(self.Binding.CostOverride);
+    if (binding.CostOverride) then
+        self.CostFunction = ItemCost:bind2(binding.CostOverride);
 
     --Angon
-    elseif (self.Binding.Id == 682) then
+    elseif (binding.Id == 682) then
         self.CostFunction = ItemCost:bind2(T{18259});
 
     --Tomahawk
-    elseif (self.Binding.Id == 662) then
+    elseif (binding.Id == 662) then
         self.CostFunction = ItemCost:bind2(T{18258});
 
     --Finishing Moves
@@ -289,7 +282,7 @@ function Updater:Initialize(square, binding)
         self.CostFunction = FinishingMoveCost:bind2(flourish);
 
     --Rune Enchantment
-    elseif T{ 856, 878, 880, 881, 883, 884, 885, 887, 888 }:contains(self.Binding.Id) then
+    elseif T{ 856, 878, 880, 881, 883, 884, 885, 887, 888 }:contains(binding.Id) then
         self.CostFunction = RuneEnchantmentCost;
     end
 end
@@ -304,59 +297,11 @@ function Updater:Tick()
     local abilityAvailable            = gPlayer:KnowsAbility(self.Resource.Id);
     local abilityCostDisplay, costMet = self:CostFunction(recastReady);
 
-    if (gSettings.ShowHotkey) and (self.Binding.ShowHotkey) then
-        self.StructPointer.Hotkey = self.Square.Hotkey;
-    else
-        self.StructPointer.Hotkey = '';
-    end
-
-    self.StructPointer.OverlayImage1 = '';
-    
-    if (self.IconImage == nil) then
-        self.StructPointer.IconImage = '';
-    else
-        self.StructPointer.IconImage = self.IconImage;
-    end
-
-    if (gSettings.ShowName) and (self.Binding.ShowName) then
-        self.StructPointer.Name = self.Binding.Label;
-    else
-        self.StructPointer.Name = '';
-    end
-
-    if (gSettings.ShowCost) and (self.Binding.ShowCost) then
-        self.StructPointer.Cost = abilityCostDisplay;
-    else
-        self.StructPointer.Cost = '';
-    end
-    
-    if (gSettings.ShowRecast) and (self.Binding.ShowRecast) and (recastDisplay ~= nil) then
-        self.StructPointer.Recast = recastDisplay;
-    else
-        self.StructPointer.Recast = '';
-    end
-
-    if (gSettings.ShowCross) and (self.Binding.ShowCross) then
-        if abilityAvailable == false then
-            self.StructPointer.OverlayImage2 = self.CrossImage;
-        else
-            self.StructPointer.OverlayImage2 = '';
-        end
-    end
-
-    if (gSettings.ShowTrigger) and (self.Binding.ShowTrigger) then
-        if (self.Square.Activation > os.clock()) then
-            self.StructPointer.OverlayImage3 = self.TriggerImage;
-        else
-            self.StructPointer.OverlayImage3 = '';
-        end
-    end
-
-    if (gSettings.ShowFade) and (self.Binding.ShowFade) and ((costMet == false) or (recastReady == 0) or (recastReady == false)) then
-        self.StructPointer.Fade = 1;
-    else
-        self.StructPointer.Fade = 0;
-    end
+    self.State.Available = abilityAvailable;
+    self.State.Cost = abilityCostDisplay;
+    self.State.Ready = ((costMet == true) and ((recastReady > 0) or (recastReady == true)));
+    self.State.Recast = recastDisplay;
+    self.State.Skillchain = nil;
 end
 
 return Updater;
