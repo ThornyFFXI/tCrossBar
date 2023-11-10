@@ -70,22 +70,6 @@ function controller:HandleInput(e)
     end
 end
 
-local function LoadLayout(layoutName)
-    --Attempt to load layout file.
-    local layoutPaths = T{
-        string.format('%sconfig/addons/%s/resources/controllers/%s.lua', AshitaCore:GetInstallPath(), addon.name, layoutName),
-        string.format('%saddons/%s/resources/controllers/%s.lua', AshitaCore:GetInstallPath(), addon.name, layoutName),
-    };
-
-    for _,path in ipairs(layoutPaths) do
-        local layout = LoadFile_s(path);
-        if (layout ~= nil) then
-            layout.Name = layoutName;
-            return layout;
-        end
-    end
-end
-
 local function InitializeControls()
     --Initialize any blank controls..
     local changed = false;
@@ -124,7 +108,7 @@ function controller:SetLayout(layout)
         self.XinputCB = false;
     end
 
-    self.Layout = LoadLayout(layout);
+    self.Layout = layout;
     
     if (self.Layout ~= nil) then
         InitializeControls();

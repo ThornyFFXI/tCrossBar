@@ -1,7 +1,7 @@
-local d3d = require('d3d8');
-local ffi = require('ffi');
-local gdi = require('gdifonts.include');
-local updaters     = {
+local d3d8     = require('d3d8');
+local ffi      = require('ffi');
+local gdi      = require('gdifonts.include');
+local updaters = {
     ['Ability']     = require('updaters.ability'),
     ['Command']     = require('updaters.command'),
     ['Empty']       = require('updaters.empty'),
@@ -84,8 +84,17 @@ function Element:Destroy()
     self.Updater:Destroy();
 end
 
+function Element:HitTest(x, y)
+    local hitbox = self.HitBox;
+    if (x < hitbox.MinX) or (x > hitbox.MaxX) then
+        return false;
+    end
+
+    return (y >= hitbox.MinY) and (y <= hitbox.MaxY);
+end
+
 local textOrder = T { 'Hotkey', 'Cost', 'Recast', 'Name' };
-local d3dwhite = d3d.D3DCOLOR_ARGB(255, 255, 255, 255);
+local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
 local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
 function Element:Initialize()
@@ -94,12 +103,22 @@ function Element:Initialize()
         local data = self.Layout[entry];
         if data then
             local obj = gdi:create_object(data, true);
-            obj:set_font_height(math.floor(data.font_height * gSettings.Scale));
-            obj.OffsetX = data.OffsetX * gSettings.Scale;
-            obj.OffsetY = data.OffsetY * gSettings.Scale;
+            obj.OffsetX = data.OffsetX;
+            obj.OffsetY = data.OffsetY;
             self.FontObjects[entry] = obj;
         end
     end
+end
+
+function Element:SetPosition(position)
+    self.PositionX = position[1] + self.OffsetX;
+    self.PositionY = position[2] + self.OffsetY;
+    self.HitBox = {
+        MinX = self.PositionX + self.Layout.Icon.OffsetX,
+        MaxX = self.PositionX + self.Layout.Icon.OffsetX + self.Layout.Icon.Width,
+        MinY = self.PositionY + self.Layout.Icon.OffsetY,
+        MaxY = self.PositionY + self.Layout.Icon.OffsetY + self.Layout.Icon.Height,
+    };
 end
 
 function Element:UpdateBinding(binding)
@@ -183,7 +202,7 @@ function Element:Render(sprite)
         vec_position.y = positionY + layout.Icon.OffsetY;
         local opacity = d3dwhite;
         if (gSettings.ShowFade) and (self.Binding.ShowFade) and (not self.State.Ready) then
-            opacity = layout.Icon.FadeOpacity;
+            opacity = layout.FadeOpacity;
         end
         sprite:Draw(icon.Texture, icon.Rect, icon.Scale, nil, 0.0, vec_position, opacity);
     end
@@ -205,6 +224,16 @@ function Element:Render(sprite)
             vec_position.x = positionX + layout.Icon.OffsetX;
             vec_position.y = positionY + layout.Icon.OffsetY;
             sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+        end
+    end
+
+    --Draw trigger if applicable..
+    if (gSettings.ShowTrigger) and (self.Binding.ShowTrigger) and (os.clock() < (self.Activation + gSettings.TriggerDuration)) then
+        local component = layout.Textures.Trigger;
+        if component then
+            vec_position.x = positionX + layout.Icon.OffsetX;
+            vec_position.y = positionY + layout.Icon.OffsetY;
+            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, layout.TriggerOpacity);
         end
     end
 

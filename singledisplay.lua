@@ -1,4 +1,7 @@
+local d3d8 = require('d3d8');
 local element = require('element');
+local ffi = require('ffi');
+local player = require('state.player');
 --Thanks to Velyn for the event system and interface hidden signatures!
 local pGameMenu = ashita.memory.find('FFXiMain.dll', 0, "8B480C85C974??8B510885D274??3B05", 16, 0);
 local pEventSystem = ashita.memory.find('FFXiMain.dll', 0, "A0????????84C0741AA1????????85C0741166A1????????663B05????????0F94C0C3", 0, 0);
@@ -52,124 +55,110 @@ local function GetButtonAlias(comboIndex, buttonIndex)
     return string.format('%s:%d', macroComboBinds[comboIndex], buttonIndex);
 end
 
-local SingleDisplay = {};
-SingleDisplay.Elements = T{};
-
-function SingleDisplay:Initialize(layout)
-    self.Layout = layout;
-    self.Hidden = false;
-
-    self.SinglePrimitives = T{};
-    for _,primitiveInfo in ipairs(layout.SingleDisplay.Primitives) do
-        local prim = {
-            Object = primitives.new(primitiveInfo),
-            OffsetX = primitiveInfo.OffsetX,
-            OffsetY = primitiveInfo.OffsetY,
-        };
-        self.SinglePrimitives:append(prim);
-    end
-
-    self.DoublePrimitives = T{};
-    for _,primitiveInfo in ipairs(layout.DoubleDisplay.Primitives) do
-        local prim = {
-            Object = primitives.new(primitiveInfo),
-            OffsetX = primitiveInfo.OffsetX,
-            OffsetY = primitiveInfo.OffsetY,
-        };
-        self.DoublePrimitives:append(prim);
-    end
-
-    self.Squares = T{
-        [1] = {},
-        [2] = {},
-    };
-
-
-    local count = 0;
-    self.DefaultSquares = T{};
-    for _,squareInfo in ipairs(layout.DoubleDisplay.Squares) do
-        local buttonIndex = (count < 8) and (count + 1) or (count - 7);
-        local tableIndex = (count < 8) and 1 or 2;
-        
-        local singlePointer = ffi.cast('AbilitySquareState_t*', singleStruct + structOffset + (structWidth * (buttonIndex - 1)));
-        local doublePointer = ffi.cast('AbilitySquareState_t*', doubleStruct + structOffset + (structWidth * count));
-
-        local newSquare = square:New(doublePointer, GetButtonAlias(tableIndex, buttonIndex));
-        newSquare.SinglePointer = singlePointer;
-        newSquare.DoublePointer = doublePointer;
-
-        count = count + 1;
-        newSquare.MinX = squareInfo.OffsetX + layout.DoubleDisplay.ImageObjects.Frame.OffsetX;
-        newSquare.MaxX = newSquare.MinX + layout.DoubleDisplay.ImageObjects.Frame.Width;
-        newSquare.MinY = squareInfo.OffsetY + layout.DoubleDisplay.ImageObjects.Frame.OffsetY;
-        newSquare.MaxY = newSquare.MinY + layout.DoubleDisplay.ImageObjects.Frame.Height;
-        self.Squares[tableIndex][buttonIndex] = newSquare;
-    end
-    for i = 3,6 do
-        self.Squares[i] = T{};
-        count = 0;
-        for _,squareInfo in ipairs(layout.SingleDisplay.Squares) do
-            local buttonIndex = count + 1;
-            local singlePointer = ffi.cast('AbilitySquareState_t*', singleStruct + structOffset + (structWidth * count));
-            local newSquare = square:New(singlePointer, GetButtonAlias(i, buttonIndex));
-            newSquare.MinX = squareInfo.OffsetX + layout.SingleDisplay.ImageObjects.Frame.OffsetX;
-            newSquare.MaxX = newSquare.MinX + layout.SingleDisplay.ImageObjects.Frame.Width;
-            newSquare.MinY = squareInfo.OffsetY + layout.SingleDisplay.ImageObjects.Frame.OffsetY;
-            newSquare.MaxY = newSquare.MinY + layout.SingleDisplay.ImageObjects.Frame.Height;
-            self.Squares[i][buttonIndex] = newSquare;
-            count = count + 1;
+local function GetDimensions(layout, key)
+    for _,entry in ipairs(layout.FixedObjects) do
+        if (key == entry.Texture) then
+            return { Width=entry.Width, Height=entry.Height };
         end
     end
-end
 
-function SquareManager:GetSquareByButton(macroState, macroIndex)
-    local squareSet = self.Squares[macroState];
-    if (squareSet ~= nil) then
-        local square = squareSet[macroIndex];
-        if (square ~= nil) then
-            return square;
-        end
-    end
-end
-
-function SquareManager:Activate(macroState, button)
-    local square = self:GetSquareByButton(macroState, button);
-    if square then
-        square:Activate();
-    end
-end
-
-function SquareManager:Destroy()
-    for _,squareSet in ipairs(self.Squares) do
-        for _,square in ipairs(squareSet) do
-            square:Destroy();
-        end
+    if (key == 'Frame') then
+        return { Width=layout.Frame.Width, Height=layout.Frame.Height };
     end
     
-    if (type(self.SinglePrimitives) == 'table') then
-        for _,primitive in ipairs(self.SinglePrimitives) do
-            primitive.Object:destroy();
-        end
-        self.SinglePrimitives = nil;
-    end
-    if (type(self.DoublePrimitives) == 'table') then
-        for _,primitive in ipairs(self.DoublePrimitives) do
-            primitive.Object:destroy();
-        end
-        self.DoublePrimitives = nil;
-    end
-
-    self.SingleStruct = nil;
-    self.DoubleStruct = nil;
+    return { Width=layout.Icon.Width, Height=layout.Icon.Height };
 end
 
-function SquareManager:GetHidden()
-    if (self.SingleStruct == nil) or (self.DoubleStruct == nil) then
-        return true;
+local SingleDisplay = {};
+
+function SingleDisplay:Initialize(layout, scale)
+    self.Layout = layout;
+
+    --Prescale offsets and hitboxes..
+    for _,singleTable in ipairs(T{layout, layout.FixedObjects, layout.Elements}) do
+        for _,tableEntry in pairs(singleTable) do
+            if (type(tableEntry) == 'table') then
+                if (tableEntry.OffsetX ~= nil) then
+                    tableEntry.OffsetX = tableEntry.OffsetX * scale;
+                    tableEntry.OffsetY = tableEntry.OffsetY * scale;
+                end
+                if (tableEntry.Width ~= nil) then
+                    tableEntry.Width = tableEntry.Width * scale;
+                    tableEntry.Height = tableEntry.Height * scale;
+                end
+            end        
+        end    
+    end
+    
+    --Prepare textures for efficient rendering..
+    for _,singleTable in ipairs(T{layout.SkillchainFrames, layout.Textures}) do
+        for key,path in pairs(singleTable) do
+            local tx = gTextureCache:GetTexture(path);
+            if tx then
+                local dimensions = GetDimensions(key);
+
+                local preparedTexture = {};
+                preparedTexture.Texture = tx.Texture;
+                preparedTexture.Rect = ffi.new('RECT', { 0, 0, tx.Width, tx.Height });
+                preparedTexture.Scale = ffi.new('D3DXVECTOR2', { dimensions.Width / tx.Width, dimensions.Height / tx.Height });
+                singleTable[key] = preparedTexture;
+            else
+                singleTable[key] = nil;
+            end
+        end
     end
 
+    layout.FadeOpacity = d3d8.D3DCOLOR_ARGB(layout.FadeOpacity, 255, 255, 255);
+    layout.TriggerOpacity = d3d8.D3DCOLOR_ARGB(layout.TriggerOpacity, 255, 255, 255);
+
+    self.ElementGroups = T{};
+
+    for group = 1,6 do
+        self.ElementGroups[group] = T{};
+        for macro = 1,8 do
+            local newElement = element:New(GetButtonAlias(group, macro), layout);
+            newElement.OffsetX = layout.Elements[macro].OffsetX;
+            newElement.OffsetY = layout.Elements[macro].OffsetY;
+            newElement:SetPosition(gSettings.Position[gSettings.Layout].SingleDisplay);
+            self.ElementGroups[group]:append(newElement);
+        end
+    end
+
+    if (self.Sprite == nil) then
+        local sprite = ffi.new('ID3DXSprite*[1]');
+        if (ffi.C.D3DXCreateSprite(d3d8.get_device(), self.Sprite) == ffi.C.S_OK) then
+            self.Sprite = d3d8.gc_safe_release(ffi.cast('ID3DXSprite*', sprite[0]));
+        else
+            Error('Failed to create Sprite in SingleDisplay:Initialize.');
+        end
+    end
+end
+
+function SingleDisplay:Destroy()
+    self.Layout = nil;
+    self.ElementGroups = T{};
+end
+
+function SingleDisplay:GetElementByMacro(macroState, macroIndex)
+    local group = self.ElementGroups[macroState];
+    if (group ~= nil) then
+        local element = group[macroIndex];
+        if (element ~= nil) then
+            return element;
+        end
+    end
+end
+
+function SingleDisplay:Activate(macroState, macroIndex)
+    local element = self:GetElementByMacro(macroState, macroIndex);
+    if element then
+        element:Activate();
+    end
+end
+
+local function GetHidden()
     if (gSettings.HideWhileZoning) then
-        if (gPlayer:GetLoggedIn() == false) then
+        if (player:GetLoggedIn() == false) then
             return true;
         end
     end
@@ -193,117 +182,66 @@ function SquareManager:GetHidden()
     return false;
 end
 
-function SquareManager:HidePrimitives(primitives)
-    for _,primitive in ipairs(primitives) do
-        primitive.Object.visible = false;
-    end
-end
-
-function SquareManager:HitTest(x, y)
-    local pos, width, height, type;
-    if (self.DoubleDisplay == true) then
-        pos = gSettings.Position[gSettings.Layout].DoubleDisplay;
-        width = self.Layout.DoubleDisplay.PanelWidth;
-        height = self.Layout.DoubleDisplay.PanelHeight;
-        type = 'DoubleDisplay';
-    elseif (self.SingleDisplay == true) then
-        pos = gSettings.Position[gSettings.Layout].SingleDisplay;
-        width = self.Layout.SingleDisplay.PanelWidth;
-        height = self.Layout.SingleDisplay.PanelHeight;
-        type = 'SingleDisplay';
-    end
-
-    if (pos ~= nil) then
-        if (x >= pos[1]) and (y >= pos[2]) then
-            local offsetX = x - pos[1];
-            local offsetY = y - pos[2];
-            if (offsetX < width) and (offsetY < height) then
-                return true, type;
-            end
-        end
-    end
-    
-    return false;
-end
-
-function SquareManager:Tick()
-    self.SingleDisplay = false;
-    self.DoubleDisplay = false;
-
-    if (self:GetHidden()) then
-        self:HidePrimitives(self.SinglePrimitives);
-        self:HidePrimitives(self.DoublePrimitives);
+local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
+local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
+function SingleDisplay:Render(macroState)
+    if GetHidden() or (self.Sprite == nil) or (macroState == 0) then
         return;
     end
 
+    local pos = gSettings.Position[gSettings.Layout].SingleDisplay;
+    local sprite = self.Sprite;
+    sprite:Begin();
 
-    local macroState = gController:GetMacroState();
-    if (gBindingGUI:GetActive()) then
-        macroState = gBindingGUI:GetMacroState();
+    for _,object in ipairs(self.Layout.FixedObjects) do
+        local component = self.Layout.Textures[object.Texture];
+        vec_position.x = pos[1] + object.OffsetX;
+        vec_position.y = pos[2] + object.OffsetY;
+        sprite:Draw(object.Texture, object.Rect, object.Scale, nil, 0.0, vec_position, d3dwhite);
     end
 
-    if (macroState == 0) then
-        if (gSettings.ShowDoubleDisplay) then
-            self.DoubleDisplay = true;
+    local group = self.ElementGroups[macroState];
+    if group then
+        for _,element in ipairs(group) do
+            element:Render(sprite);
         end
-    elseif (macroState < 3) then
-        if (gSettings.SwapToSingleDisplay) then
-            self.SingleDisplay = true;
-        else
-            self.DoubleDisplay = true;
-        end
-    else
-        self.SingleDisplay = true;
+    end
+    sprite:End();
+end
+
+function SingleDisplay:HitTest(x, y)
+    local pos = gSettings.Position[gSettings.Layout].SingleDisplay;
+    if (x < pos[1]) or (y < pos[2]) then
+        return false;
     end
 
-    if (self.SingleDisplay) then
-        for _,squareClass in ipairs(self.Squares[macroState]) do
-            if (macroState < 3) then
-                squareClass.StructPointer = squareClass.SinglePointer;
-                squareClass.Updater.StructPointer = squareClass.SinglePointer;
+    if (x > (pos[1] + self.Layout.Panel.Width)) then
+        return false;
+    end
+
+    if (y > (pos[2] + self.Layout.Panel.Height)) then
+        return false;
+    end
+
+    local selectedElement = 0;
+    local group = self.ElementGroups[1];
+    if group then
+        for index,element in ipairs(group) do
+            if (element:HitTest(x, y)) then
+                selectedElement = index;
             end
-            squareClass:Update();
         end
-        local pos = gSettings.Position[gSettings.Layout].SingleDisplay;
-        self.SingleStruct.PositionX = pos[1];
-        self.SingleStruct.PositionY = pos[2];
-        self.SingleStruct.Render = 1;
-        self:HidePrimitives(self.DoublePrimitives);
-        self:UpdatePrimitives(self.SinglePrimitives, pos);
-    elseif (self.DoubleDisplay) then
-        for _,tableIndex in ipairs(T{1, 2}) do
-            for _,squareClass in ipairs(self.Squares[tableIndex]) do
-                squareClass.StructPointer = squareClass.DoublePointer;
-                squareClass.Updater.StructPointer = squareClass.DoublePointer;
-                squareClass:Update();
-            end
-        end
-        local pos = gSettings.Position[gSettings.Layout].DoubleDisplay;
-        self.DoubleStruct.PositionX = pos[1];
-        self.DoubleStruct.PositionY = pos[2];
-        self.DoubleStruct.Render = 1;
-        self:HidePrimitives(self.SinglePrimitives);
-        self:UpdatePrimitives(self.DoublePrimitives, pos);
-    else
-        self:HidePrimitives(self.SinglePrimitives);
-        self:HidePrimitives(self.DoublePrimitives);
     end
+
+    return true, selectedElement;
 end
 
-function SquareManager:UpdateBindings(bindings)
-    for comboKey,squareSet in ipairs(self.Squares) do
-        for buttonKey,square in ipairs(squareSet) do
-            square:UpdateBinding(bindings[GetButtonAlias(comboKey, buttonKey)]);
+function SingleDisplay:UpdateBindings(bindings)
+    for macroState,group in ipairs(self.ElementGroups) do
+        for macroIndex,element in ipairs(group) do
+            element:UpdateBinding(bindings[GetButtonAlias(macroState, macroIndex)]);
         end
     end
 end
 
-function SquareManager:UpdatePrimitives(primitives, position)
-    for _,primitive in ipairs(primitives) do
-        primitive.Object.position_x = position[1] + primitive.OffsetX;
-        primitive.Object.position_y = position[2] + primitive.OffsetY;
-        primitive.Object.visible = true;
-    end
-end
-
-return SquareManager;
+return SingleDisplay;

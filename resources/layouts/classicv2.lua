@@ -38,13 +38,18 @@ local layout = {
             Dpad          = 'misc/dpad.png',
         },
 
+        --Transparency to be used when bound macro's action is not known.  [0-255]
+        FadeOpacity = 128,
+        
+        --Opacity of the overlay shown when a macro is activated.  [0-255]
+        TriggerOpacity = 128,
+
         --The border of each macro element.  Offsets are relative to the macro element's placement.
         Frame = {
             OffsetX = 0,
             OffsetY = 0,
             Width = 44,
             Height = 44,
-            File = 'misc/frame.png',
         },
 
         --The inner icon for each macro element.  Offsets are relative to the macro element's placement.
@@ -53,8 +58,6 @@ local layout = {
             OffsetY = 2,
             Width = 40,
             Height = 40,
-            --Transparency to be used when bound macro's action is not known.  [0-255]
-            FadeOpacity = 128,
         },
 
         --The text object to display macro or hotkey activation.
@@ -126,7 +129,7 @@ local layout = {
 
         --Texture must be defined in textures table.  Objects are rendered in order, prior to square elements.
         FixedObjects = T{
-            T{                
+            T{
                 OffsetX = 69,
                 OffsetY = 57,
                 Width = 40,
@@ -143,8 +146,10 @@ local layout = {
         },
 
         --Size of hitbox for entire element.
-        PanelWidth = 358,
-        PanelHeight = 168,
+        Panel = {
+            Width = 358,
+            Height = 168,
+        },
         
         --Default location, set later by scaling lib in this profile
         DefaultX = 0,
@@ -222,7 +227,6 @@ local layout = {
             OffsetY = 0,
             Width = 44,
             Height = 44,
-            File = 'misc/frame.png',
         },
 
         --The inner icon for each macro element.  Offsets are relative to the macro element's placement.
@@ -335,8 +339,10 @@ local layout = {
         },
 
         --Size of hitbox for entire element.
-        PanelWidth = 746,
-        PanelHeight = 168,
+        Panel = {
+            Width = 746,
+            Height = 168,
+        },
         
         --Default location, set later by scaling lib in this profile
         DefaultX = 0,

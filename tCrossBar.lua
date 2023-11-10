@@ -27,7 +27,23 @@ addon.link      = 'https://ashitaxi.com/';
 
 require('common');
 local gdi        = require('gdifonts.include');
+gInitializer     = require('initializer');
 local clickTarget;
+
+function Error(text)
+    local color = ('\30%c'):format(68);
+    local highlighted = color .. string.gsub(text, '$H', '\30\01\30\02');
+    highlighted = string.gsub(highlighted, '$R', '\30\01' .. color);
+    print(chat.header(addon.name) .. highlighted .. '\30\01');
+end
+
+
+function Message(text)
+    local color = ('\30%c'):format(106);
+    local highlighted = color .. string.gsub(text, '$H', '\30\01\30\02');
+    highlighted = string.gsub(highlighted, '$R', '\30\01' .. color);
+    print(chat.header(addon.name) .. highlighted .. '\30\01');
+end
 
 ashita.events.register('load', 'load_cb', function ()
     gdi:set_auto_render(false);

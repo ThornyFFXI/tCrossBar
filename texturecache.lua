@@ -6,29 +6,6 @@ TextureCache.ItemCache = {};
 TextureCache.ImageCache = {};
 TextureCache.StatusCache = {};
 
-local function GetImagePath(image, default)
-    if (string.sub(image, 1, 5) == 'ITEM:') then
-        return image;
-    end
-    
-    local potentialPaths = T{
-        image,
-        string.format('%sconfig/addons/%s/resources/%s', AshitaCore:GetInstallPath(), addon.name, image),
-        string.format('%saddons/%s/resources/%s', AshitaCore:GetInstallPath(), addon.name, image),
-        default or '',
-        string.format('%sconfig/addons/%s/resources/misc/unknown.png', AshitaCore:GetInstallPath(), addon.name),
-        string.format('%saddons/%s/resources/misc/unknown.png', AshitaCore:GetInstallPath(), addon.name),
-    };
-
-    for _,path in ipairs(potentialPaths) do
-        if (path ~= '') and (ashita.fs.exists(path)) then
-            return path;
-        end
-    end
-
-    return nil;
-end
-
 function TextureCache:GetTexture(file)
     if (string.sub(file, 1, 5) == 'ITEM:') then
         local itemId = tonumber(string.sub(file, 6));
