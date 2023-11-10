@@ -297,24 +297,17 @@ function Updater:New()
     return o;
 end
 
-function Updater:Initialize(square, binding)
-    self.Binding       = binding;
-    self.Square        = square;
-    self.StructPointer = square.StructPointer;
-    self.Resource      = AshitaCore:GetResourceManager():GetSpellById(self.Binding.Id);
+function Updater:Initialize(element, binding)
+    self.State = element.State;
+    self.Resource      = AshitaCore:GetResourceManager():GetSpellById(binding.Id);
 
-    local layout = gInterface:GetSquareManager().Layout;
-    self.IconImage = GetImagePath(self.Binding.Image);
-    self.CrossImage = layout.CrossPath;
-    self.TriggerImage = layout.TriggerPath;
-    
     --Set cost and recast function for charge-based abilities.
 
-    local ninjutsu = ninjutsuCost[self.Binding.Id];
+    local ninjutsu = ninjutsuCost[binding.Id];
     
     --Custom
-    if (self.Binding.CostOverride) then
-        self.CostFunction = ItemCost:bind2(self.Binding.CostOverride);
+    if (binding.CostOverride) then
+        self.CostFunction = ItemCost:bind2(binding.CostOverride);
     elseif (ninjutsu ~= nil) then
         self.CostFunction = NinjutsuCost:bind2(ninjutsu);
     elseif (self.Resource.ManaCost < 1) then
@@ -381,60 +374,43 @@ function Updater:Tick()
     local recastReady, recastDisplay  = GetSpellRecast(self.Resource);
     local spellKnown, spellAvailable  = GetSpellAvailable(self);
     local spellCostDisplay, costMet   = self:CostFunction();
-
-    if (gSettings.ShowHotkey) and (self.Binding.ShowHotkey) then
-        self.StructPointer.Hotkey = self.Square.Hotkey;
-    else
-        self.StructPointer.Hotkey = '';
-    end
-
-    self.StructPointer.OverlayImage1 = '';
     
-    if (self.IconImage == nil) then
-        self.StructPointer.IconImage = '';
+    self.State.Available = spellKnown;
+    self.State.Cost = spellCostDisplay;
+    self.State.Ready = ((costMet == true) and (recastReady == true) and (spellAvailable == true));
+    if (recastDisplay ~= nil) then
+        self.State.Recast = recastDisplay;
     else
-        self.StructPointer.IconImage = self.IconImage;
+        self.State.Recast = '';
+    end
+    self.State.Skillchain = self:UpdateSkillchain();
+end
+
+function Updater:UpdateSkillchain()
+    local targetMgr = AshitaCore:GetMemoryManager():GetTarget();
+    local target = targetMgr:GetTargetIndex(targetMgr:GetIsSubTargetActive());
+
+    --Skip if no target..
+    if (target == 0) then
+        return;
     end
 
-    if (gSettings.ShowName) and (self.Binding.ShowName) then
-        self.StructPointer.Name = self.Binding.Label;
-    else
-        self.StructPointer.Name = '';
+    --Skip if target is a player..
+    if (target >= 0x400) and (target < 0x700) then
+        return;
     end
 
-    if (gSettings.ShowCost) and (self.Binding.ShowCost) then
-        self.StructPointer.Cost = spellCostDisplay;
-    else
-        self.StructPointer.Cost = '';
-    end
-    
-    if (gSettings.ShowRecast) and (self.Binding.ShowRecast) and (recastDisplay ~= nil) then
-        self.StructPointer.Recast = recastDisplay;
-    else
-        self.StructPointer.Recast = '';
+    --Skip if target is a pet..
+    if (target >= 0x700) and (AshitaCore:GetMemoryManager():GetEntity():GetTrustOwnerTargetIndex(target) ~= 0) then
+        return;
     end
 
-    if (gSettings.ShowCross) and (self.Binding.ShowCross) then
-        if spellKnown == false then
-            self.StructPointer.OverlayImage2 = self.CrossImage;
-        else
-            self.StructPointer.OverlayImage2 = '';
-        end
+    local resonation, skillchain = gSkillchain:GetSkillchainBySpell(target, self.Resource.Id);
+    if (resonation == nil) or (resonation.WindowClose < os.clock()) then
+        return;
     end
 
-    if (gSettings.ShowTrigger) and (self.Binding.ShowTrigger) then
-        if (self.Square.Activation > os.clock()) then
-            self.StructPointer.OverlayImage3 = self.TriggerImage;
-        else
-            self.StructPointer.OverlayImage3 = '';
-        end
-    end
-    
-    if (gSettings.ShowFade) and (self.Binding.ShowFade) and ((costMet == false) or (recastReady == 0) or (recastReady == false) or (spellAvailable == false)) then
-        self.StructPointer.Fade = 1;
-    else
-        self.StructPointer.Fade = 0;
-    end
+    return { Skillchain=skillchain, Open=(os.clock() > resonation.WindowOpen) };
 end
 
 return Updater;

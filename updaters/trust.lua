@@ -71,20 +71,12 @@ function Updater:New()
     return o;
 end
 
-function Updater:Initialize(square, binding)
-    self.Binding       = binding;
-    self.Square        = square;
-    self.StructPointer = square.StructPointer;
-    self.Resource      = AshitaCore:GetResourceManager():GetSpellById(self.Binding.Id);
-
-    local layout = gInterface:GetSquareManager().Layout;
-    self.IconImage = GetImagePath(self.Binding.Image);
-    self.CrossImage = layout.CrossPath;
-    self.TriggerImage = layout.TriggerPath;
+function Updater:Initialize(element, binding)
+    self.State    = element.State;
+    self.Resource = AshitaCore:GetResourceManager():GetSpellById(binding.Id);
     
-    --Custom
-    if (self.Binding.CostOverride) then
-        self.CostFunction = ItemCost:bind2(self.Binding.CostOverride);
+    if (binding.CostOverride) then
+        self.CostFunction = ItemCost:bind2(binding.CostOverride);
     else
         self.CostFunction = function()
             return '', true;
@@ -102,59 +94,15 @@ function Updater:Tick()
     local spellKnown                  = gPlayer:KnowsSpell(self.Resource.Index)
     local spellCostDisplay, costMet   = self:CostFunction();    
 
-    if (gSettings.ShowHotkey) and (self.Binding.ShowHotkey) then
-        self.StructPointer.Hotkey = self.Square.Hotkey;
+    self.State.Available = spellKnown;
+    self.State.Cost = spellCostDisplay;
+    self.State.Ready = ((costMet == true) and (recastReady == true));
+    if (recastDisplay ~= nil) then
+        self.State.Recast = recastDisplay;
     else
-        self.StructPointer.Hotkey = '';
+        self.State.Recast = '';
     end
-
-    self.StructPointer.OverlayImage1 = '';
-    
-    if (self.IconImage == nil) then
-        self.StructPointer.IconImage = '';
-    else
-        self.StructPointer.IconImage = self.IconImage;
-    end
-
-    if (gSettings.ShowName) and (self.Binding.ShowName) then
-        self.StructPointer.Name = self.Binding.Label;
-    else
-        self.StructPointer.Name = '';
-    end
-
-    if (gSettings.ShowCost) and (self.Binding.ShowCost) then
-        self.StructPointer.Cost = spellCostDisplay;
-    else
-        self.StructPointer.Cost = '';
-    end
-    
-    if (gSettings.ShowRecast) and (self.Binding.ShowRecast) and (recastDisplay ~= nil) then
-        self.StructPointer.Recast = recastDisplay;
-    else
-        self.StructPointer.Recast = '';
-    end
-
-    if (gSettings.ShowCross) and (self.Binding.ShowCross) then
-        if spellKnown == false then
-            self.StructPointer.OverlayImage2 = self.CrossImage;
-        else
-            self.StructPointer.OverlayImage2 = '';
-        end
-    end
-
-    if (gSettings.ShowTrigger) and (self.Binding.ShowTrigger) then
-        if (self.Square.Activation > os.clock()) then
-            self.StructPointer.OverlayImage3 = self.TriggerImage;
-        else
-            self.StructPointer.OverlayImage3 = '';
-        end
-    end
-    
-    if (gSettings.ShowFade) and (self.Binding.ShowFade) and ((costMet == false) or (recastReady == false)) then
-        self.StructPointer.Fade = 1;
-    else
-        self.StructPointer.Fade = 0;
-    end
+    self.State.Skillchain = nil;
 end
 
 return Updater;

@@ -650,4 +650,46 @@ function exposed:GetSkillchain(targetIndex, weaponskillId)
     return;
 end
 
+function exposed:GetSkillchainBySpell(targetIndex, spellId)
+    local buffId;
+    local spellAttributes = immanenceResonationMap[spellId];
+    if spellAttributes then
+        buffId = 470;
+    else
+        spellAttributes = chainAffinityResonationMap[spellId];
+        if spellAttributes then
+            buffId = 164;
+        end
+    end
+    if not buffId then
+        return;
+    end
+    
+    local buffActive = false;
+    local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetStatusIcons();
+    for i = 1,32 do
+        if (buffs[i] == buffId) then
+            buffActive = true;
+            break;
+        end
+    end
+
+    if not buffActive then
+        return;
+    end
+
+    local resonation = resonationMap[targetIndex];
+    if not resonation then
+        return;
+    end
+
+    for _,sc in ipairs(possibleSkillchains) do
+        if (resonation.Attributes:contains(sc[2])) then
+            if spellAttributes:contains(sc[3]) then
+                return resonation, sc[1];
+            end
+        end
+    end
+end
+
 return exposed;
