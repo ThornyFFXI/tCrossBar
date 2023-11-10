@@ -91,7 +91,7 @@ local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
 function Element:Initialize()
     self.FontObjects = T{};
     for _,entry in ipairs(textOrder) do
-        local data = self.Layout.Element[entry];
+        local data = self.Layout[entry];
         if data then
             local obj = gdi:create_object(data, true);
             obj:set_font_height(math.floor(data.font_height * gSettings.Scale));
@@ -162,16 +162,16 @@ function Element:Render(sprite)
                 Frame = 1,
                 Time = os.clock();
             };
-        elseif (os.clock() > (self.SkillchainAnimation.Time + layout.Skillchain.FrameDelay)) then
+        elseif (os.clock() > (self.SkillchainAnimation.Time + layout.SkillchainFrameLength)) then
             self.SkillchainAnimation.Frame = self.SkillchainAnimation.Frame + 1;
-            if (self.SkillchainAnimation.Frame > #layout.Skillchain.Frames) then
+            if (self.SkillchainAnimation.Frame > #layout.SkillchainFrames) then
                 self.SkillchainAnimation.Frame = 1;
             end
             self.SkillchainAnimation.Time = os.clock();
         end
         
         if (gSettings.ShowSkillchainIcon) and (self.Binding.ShowSkillchainIcon) then
-            icon = layout.SkillchainIcons[self.Skillchain.Name];
+            icon = layout.Textures[self.Skillchain.Name];
         end
     else
         self.SkillchainAnimation = nil;
@@ -190,20 +190,20 @@ function Element:Render(sprite)
 
     --Draw skillchain animation if applicable..
     if (self.SkillchainAnimation) and (gSettings.ShowSkillchainAnimation) and (self.Binding.ShowSkillchainAnimation) then
-        local component = layout.Skillchain.Frames[self.SkillchainAnimation.Frame];
+        local component = layout.SkillchainFrames[self.SkillchainAnimation.Frame];
         if component then
-            vec_position.x = positionX + layout.Skillchain.OffsetX;
-            vec_position.y = positionY + layout.Skillchain.OffsetY;
+            vec_position.x = positionX + layout.Icon.OffsetX;
+            vec_position.y = positionY + layout.Icon.OffsetY;
             sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
         end
     end
 
     --Draw crossout if applicable..
     if (gSettings.ShowCross) and (self.Binding.ShowCross) and (not self.State.Available) then
-        local component = layout.Cross;
+        local component = layout.Textures.Cross;
         if component then
-            vec_position.x = positionX + component.OffsetX;
-            vec_position.y = positionY + component.OffsetY;
+            vec_position.x = positionX + layout.Icon.OffsetX;
+            vec_position.y = positionY + layout.Icon.OffsetY;
             sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
         end
     end
