@@ -66,7 +66,7 @@ function Element:New(hotkey, layout)
 end
 
 function Element:Activate()
-    self.Activation = os.clock() + 0.25;
+    self.Activation = os.clock();
     if (self.Binding ~= nil) then
         local macroContainer = T{};
         for _,entry in ipairs(self.Binding.Macro) do
@@ -150,10 +150,6 @@ function Element:UpdateBinding(binding)
 end
 
 function Element:Render(sprite)
-    if (self.Binding == nil) and (gSettings.ShowEmpty == false) then
-        return;
-    end
-
     self.Updater:Tick();
 
     local positionX = self.PositionX;
@@ -161,13 +157,17 @@ function Element:Render(sprite)
     local layout = self.Layout;
 
     --Draw frame first..
-    if (gSettings.ShowFrame) then
-        local component = layout.Frame;
+    if ((self.Binding) or (gSettings.ShowEmpty)) and (gSettings.ShowFrame) then
+        local component = layout.Textures.Frame;
         if component then
-            vec_position.x = positionX + component.OffsetX;
-            vec_position.y = positionY + component.OffsetY;
+            vec_position.x = positionX + layout.Frame.OffsetX;
+            vec_position.y = positionY + layout.Frame.OffsetY;
             sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
         end
+    end
+
+    if (self.Binding == nil) then
+        return;
     end
 
     --Evaluate skillchain state..

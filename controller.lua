@@ -1,3 +1,4 @@
+local imgui = require('imgui');
 local controller = {
     dInputCB = false,
     xInputCB = false,
@@ -70,7 +71,7 @@ function controller:HandleInput(e)
     end
 end
 
-local function InitializeControls()
+function controller:InitializeControls()
     --Initialize any blank controls..
     local changed = false;
     if (type(gSettings.Controls) ~= 'table') then
@@ -82,8 +83,8 @@ local function InitializeControls()
         changed = true;
     end
 
-    local controls = gSettings.Controls[controller.Layout.Name];
-    for binding,button in pairs(controller.Layout.Defaults) do
+    local controls = gSettings.Controls[self.Layout.Name];
+    for binding,button in pairs(self.Layout.Defaults) do
         if (controls[binding] == nil) then
             controls[binding] = button;
             changed = true;
@@ -95,7 +96,7 @@ local function InitializeControls()
     end
 end
 
-function controller:SetLayout(layout)
+function controller:SetLayout(layoutName)
     gBindingGUI:Close();
     self.BindMenuState.Active = false;
     if self.dInputCB == true then
@@ -108,18 +109,22 @@ function controller:SetLayout(layout)
         self.XinputCB = false;
     end
 
-    self.Layout = layout;
-    
-    if (self.Layout ~= nil) then
-        InitializeControls();
+    local controllerLayout = LoadFile_s(GetResourcePath('controllers/' .. layoutName));
+    if (controllerLayout ~= nil) then
+        controllerLayout.Name = layoutName;
+        self.Layout = controllerLayout;
+        
+        if (self.Layout ~= nil) then
+            self:InitializeControls();
 
-        if (self.Layout.DirectInput == true) then
-            ashita.events.register('dinput_button', 'dinput_button_cb', self.HandleInput:bind1(self));
-            self.dInputCB = true;
-        end
-        if (self.Layout.XInput == true) then
-            ashita.events.register('xinput_button', 'xinput_button_cb', self.HandleInput:bind1(self));
-            self.xInputCB = true;
+            if (self.Layout.DirectInput == true) then
+                ashita.events.register('dinput_button', 'dinput_button_cb', self.HandleInput:bind1(self));
+                self.dInputCB = true;
+            end
+            if (self.Layout.XInput == true) then
+                ashita.events.register('xinput_button', 'xinput_button_cb', self.HandleInput:bind1(self));
+                self.xInputCB = true;
+            end
         end
     end
 end
@@ -247,7 +252,7 @@ function controller:Trigger(button, pressed)
                     gBindingGUI:Show(self:GetMacroState(), i);
                     return true;
                 else
-                    gInterface:GetSquareManager():Activate(self:GetMacroState(), i);
+                    gSingleDisplay:Activate(self:GetMacroState(), i);
                     return true;
                 end
             end

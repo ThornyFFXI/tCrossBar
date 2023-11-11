@@ -1,5 +1,9 @@
 local d3d8 = require('d3d8');
 local d3d8_device = d3d8.get_device();
+local ffi = require('ffi');
+local imgui = require('imgui');
+local inventory = require('state.inventory');
+local player = require('state.player');
 local header = { 1.0, 0.75, 0.55, 1.0 };
 local activeHeader = { 0.5, 1.0, 0.5, 1.0 };
 local state = { IsOpen={ false } };
@@ -110,25 +114,6 @@ local function DecrementCombo(varName)
     end
 end
 
-local function DrawMacroImage()
-    local posY = imgui.GetCursorPosY();
-    local layout = gInterface:GetLayout();
-    local width = 32;
-    local height = 32;
-    if layout then
-        width = layout.ImageObjects.Icon.Width;
-        height = layout.ImageObjects.Icon.Height;
-    end
-    if (state.Texture ~= nil) then
-        local posX = (253 - width) / 2;
-        imgui.SetCursorPos({ posX, posY });
-        imgui.Image(tonumber(ffi.cast("uint32_t", state.Texture)),
-        { width, height },
-        { 0, 0 }, { 1, 1 }, { 1, 1, 1, 1 }, { 0, 0, 0, 0 });
-    end
-    imgui.SetCursorPos({imgui.GetCursorPosX(), posY + height});
-end
-
 local function UpdateMacroImage()
     state.Texture = nil;
     if (state.MacroImage == nil) then
@@ -202,7 +187,7 @@ Setup.Item = function(skipUpdate)
     local bags = T{0, 3};
     for _,bag in ipairs(bags) do
         for i = 1,80 do
-            local item = gInventory:GetItemTable(bag, i);
+            local item = inventory:GetItemTable(bag, i);
             if (item ~= nil) then
                 local res = resMgr:GetItemById(item.Id);
                 if (res ~= nil) and (bit.band(res.Flags, 0x200) == 0x200) then
@@ -217,7 +202,7 @@ Setup.Item = function(skipUpdate)
     bags = T{ 0, 8, 10, 11, 12, 13, 14, 15, 16 };
     for _,bag in ipairs(bags) do
         for i = 1,80 do
-            local item = gInventory:GetItemTable(bag, i);
+            local item = inventory:GetItemTable(bag, i);
             if (item ~= nil) then
                 local res = resMgr:GetItemById(item.Id);
                 if (res ~= nil) and (bit.band(res.Flags, 0x400) == 0x400) then
@@ -272,7 +257,7 @@ Setup.Spell = function(skipUpdate)
                 local hasSpell = false;
                 local jpMask = res.JobPointMask;
                 if (bit.band(bit.rshift(jpMask, mainJob), 1) == 1) then
-                    if (mainJobLevel == 99) and (gPlayer:GetJobPointTotal(mainJob) >= levelRequired[mainJob + 1]) then
+                    if (mainJobLevel == 99) and (player:GetJobPointTotal(mainJob) >= levelRequired[mainJob + 1]) then
                         hasSpell = true;
                     end
                 elseif (levelRequired[mainJob + 1] ~= -1) and (mainJobLevel >= levelRequired[mainJob + 1]) then
@@ -326,7 +311,7 @@ Setup.Trust = function(skipUpdate)
                 local hasSpell = false;
                 local jpMask = res.JobPointMask;
                 if (bit.band(bit.rshift(jpMask, mainJob), 1) == 1) then
-                    if (mainJobLevel == 99) and (gPlayer:GetJobPointTotal(mainJob) >= levelRequired[mainJob + 1]) then
+                    if (mainJobLevel == 99) and (player:GetJobPointTotal(mainJob) >= levelRequired[mainJob + 1]) then
                         hasSpell = true;
                     end
                 elseif (levelRequired[mainJob + 1] ~= -1) and (mainJobLevel >= levelRequired[mainJob + 1]) then
@@ -735,7 +720,7 @@ function exposed:Render()
                     if (state.ForceTab == 2) then
                         state.ForceTab = nil;
                     end
-                    local layout = gInterface:GetLayout();
+                    local layout = gSingleDisplay.Layout;
                     local width = 32;
                     local height = 32;
                     if layout then
@@ -818,14 +803,16 @@ function exposed:Render()
             imgui.End();
         end
     end
+    if (state.IsOpen[1] == false) then
+        self.ForceDisplay = nil;
+    else
+        self.ForceDisplay = gSingleDisplay;
+        self.ForceState = state.MacroState;
+    end
 end
 
 function exposed:Show(macroState, macroButton)
-    local square;
-    local squareMgr = gInterface:GetSquareManager();
-    if (squareMgr ~= nil) then
-        square = squareMgr:GetSquareByButton(macroState, macroButton);
-    end
+    local square = gSingleDisplay:GetElementByMacro(macroState, macroButton);
     if square == nil then
         state = { IsOpen = { false } };
         return;

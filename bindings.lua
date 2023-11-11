@@ -81,8 +81,7 @@ local function WriteJob(jobBindings)
 end
 
 local function ApplyBindings()
-    local squareManager = gInterface:GetSquareManager();
-    if (squareManager == nil) then
+    if (gSingleDisplay == nil) then
         return;
     end
 
@@ -106,7 +105,9 @@ local function ApplyBindings()
         end
     end
 
-    squareManager:UpdateBindings(output);
+    print('Updating bindings..');
+    gSingleDisplay:UpdateBindings(output);
+    gDoubleDisplay:UpdateBindings(output);
 end
 
 local exposed = {};

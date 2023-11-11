@@ -6,6 +6,12 @@ TextureCache.ItemCache = {};
 TextureCache.ImageCache = {};
 TextureCache.StatusCache = {};
 
+function TextureCache:Clear()
+    self.ItemCache = {};
+    self.ImageCache = {};
+    self.StatusCache = {};
+end
+
 function TextureCache:GetTexture(file)
     if (string.sub(file, 1, 5) == 'ITEM:') then
         local itemId = tonumber(string.sub(file, 6));

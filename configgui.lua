@@ -1,5 +1,7 @@
 local header = { 1.0, 0.75, 0.55, 1.0 };
+local imgui = require('imgui');
 local lastPositionX, lastPositionY;
+local scaling = require('scaling');
 local state = {
     DragMode = 'Disabled',
     DragTarget = '',
@@ -27,6 +29,18 @@ local validControls = T{
     { Name='BindingTab', Description='Changes tab in binding menu.' },
 };
 
+local function GetDefaultPosition(layout)
+    if ((scaling.window.w == -1) or (scaling.window.h == -1) or (scaling.menu.w == -1) or (scaling.menu.h == -1)) then
+        return { 0, 0 };
+    else
+        --Centered horizontally, vertically just above chat log.
+        return {
+            (scaling.window.w - layout.Panel.Width) / 2,
+            scaling.window.h - (scaling.scale_height(136) + layout.Panel.Height)
+        };
+    end
+end
+
 local function GetLayouts()
     local layouts = T{};
     local layoutPaths = T{
@@ -48,10 +62,16 @@ local function GetLayouts()
     end
 
     state.Layouts = layouts;
-    state.SelectedLayout = 1;
+    state.SingleLayout = 1;
+    state.SingleScale = { gSettings.SingleScale };
+    state.DoubleLayout = 1;
+    state.DoubleScale = { gSettings.DoubleScale };
     for index,layout in ipairs(state.Layouts) do
-        if (gSettings.Layout == layout) then
-            state.SelectedLayout = index;
+        if (gSettings.SingleLayout == layout) then
+            state.SingleLayout = index;
+        end
+        if (gSettings.DoubleLayout == layout) then
+            state.DoubleLayout = index;
         end
     end
 end
@@ -106,11 +126,6 @@ local function ControllerBindingCombo(member, helpText)
     imgui.ShowHelp(helpText);
 end
 
-local function HitTest(layout, e)
-    local minX = gSettings.Position[gSettings.Layout][state.DragTarget]
-
-end
-
 local exposed = {};
 
 function exposed:HandleMouse(e)
@@ -119,13 +134,14 @@ function exposed:HandleMouse(e)
     end
     
     if state.DragMode == 'Active' then
-        local pos = state.DragTarget:GetPosition();
-        local newX = pos[1] + (e.x - lastPositionX);
-        local newY = pos[2] + (e.y - lastPositionY);
-        state.DragTarget:SetPosition(newX, newY);
+        local pos = state.DragBuffer;
+        pos[1] = pos[1] + (e.x - lastPositionX);
+        pos[2] = pos[2] + (e.y - lastPositionY);
+        state.DragTarget:UpdatePosition();
+        settings.save();
         lastPositionX = e.x;
         lastPositionY = e.y;
-        if (e.message == 514) or (bit.band(ffi.C.GetKeyState(0x10), 0x8000) == 0) then
+        if (e.message == 514) then
             state.DragMode = 'Disabled';
             e.blocked = true;
         end
@@ -152,34 +168,102 @@ function exposed:Render()
         if (imgui.Begin(string.format('%s v%s Configuration', addon.name, addon.version), state.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
             imgui.BeginGroup();
             if imgui.BeginTabBar('##tCrossBarConfigTabBar', ImGuiTabBarFlags_NoCloseWithMiddleMouseButton) then
-                if imgui.BeginTabItem('Appearance##tCrossbarConfigAppearanceTab', 0, state.ForceTab and 6 or 4) then
+                if imgui.BeginTabItem('Layouts##tCrossbarConfigLayoutsTab', 0, state.ForceTab and 6 or 4) then
                     state.ForceTab = nil;
-                    imgui.TextColored(header, 'Layout');
-                    if (imgui.BeginCombo('##tCrossBarLayoutSelectConfig', state.Layouts[state.SelectedLayout], ImGuiComboFlags_None)) then
+                    imgui.TextColored(header, 'Single Layout');
+                    if (imgui.BeginCombo('##tCrossBarSingleLayoutSelectConfig', state.Layouts[state.SingleLayout], ImGuiComboFlags_None)) then
                         for index,layout in ipairs(state.Layouts) do
-                            if (imgui.Selectable(layout, index == state.SelectedLayout)) then
-                                state.SelectedLayout = index;
+                            if (imgui.Selectable(layout, index == state.SingleLayout)) then
+                                state.SingleLayout = index;
                             end
                         end
                         imgui.EndCombo();
                     end
+                    imgui.SliderFloat('##SingleScale', state.SingleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
+                    if (state.DragMode == 'Disabled') then
+                        if (imgui.Button('Move##MoveSingle')) then
+                            state.DragBuffer = gSettings.Position[gSettings.SingleLayout];
+                            state.DragMode = 'Pending';
+                            state.DragTarget = gSingleDisplay;
+                        end
+                        imgui.ShowHelp('Allows you to drag the single display.', true);
+                        imgui.SameLine();
+                    end
+                    if (imgui.Button('Reset##ResetSingle')) then
+                        gSettings.Position[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
+                        gSingleDisplay:UpdatePosition();
+                    end
+                    imgui.ShowHelp('Resets single display to default position.', true);
+                    imgui.SameLine();
+                    if (imgui.Button('Apply##ApplySingle')) then
+                        local layout = state.Layouts[state.SingleLayout];
+                        if (layout == nil) then
+                            Error('You must select a valid layout to apply it.');
+                        else
+                            gSettings.SingleLayout = layout;
+                            local updatePosition = (gSettings.SingleScale ~= state.SingleScale[1]);
+                            gSettings.SingleScale = state.SingleScale[1];
+                            gInitializer:ApplyLayout();
+                            if updatePosition then
+                                gSettings.Position[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
+                                gSingleDisplay:UpdatePosition();
+                            end
+                            gBindings:Update();
+                        end
+                    end
+                    imgui.ShowHelp('Applies the selected layout to your single display.', true);
+                    
+                    imgui.TextColored(header, 'Double Layout');
+                    if (imgui.BeginCombo('##tCrossBarDoubleLayoutSelectConfig', state.Layouts[state.DoubleLayout], ImGuiComboFlags_None)) then
+                        for index,layout in ipairs(state.Layouts) do
+                            if (imgui.Selectable(layout, index == state.DoubleLayout)) then
+                                state.DoubleLayout = index;
+                            end
+                        end
+                        imgui.EndCombo();
+                    end
+                    imgui.SliderFloat('##DoubleScale', state.DoubleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
+                    if (state.DragMode == 'Disabled') then
+                        if (imgui.Button('Move##MoveDouble')) then
+                            state.DragBuffer = gSettings.Position[gSettings.DoubleLayout];
+                            state.DragMode = 'Pending';
+                            state.DragTarget = gDoubleDisplay;
+                        end
+                        imgui.ShowHelp('Allows you to drag the double display.', true);
+                        imgui.SameLine();
+                    end
+                    if (imgui.Button('Reset##ResetDouble')) then
+                        gSettings.Position[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
+                        gDoubleDisplay:UpdatePosition();
+                    end
+                    imgui.ShowHelp('Resets double display to default position.', true);
+                    imgui.SameLine();
+                    if (imgui.Button('Apply##ApplyDouble')) then
+                        local layout = state.Layouts[state.DoubleLayout];
+                        if (layout == nil) then
+                            Error('You must select a valid layout to apply it.');
+                        else
+                            gSettings.DoubleLayout = layout;
+                            local updatePosition = (gSettings.DoubleScale ~= state.DoubleScale[1]);
+                            gSettings.DoubleScale = state.DoubleScale[1];
+                            gInitializer:ApplyLayout();
+                            if updatePosition then
+                                gSettings.Position[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
+                                gDoubleDisplay:UpdatePosition();
+                            end
+                            gBindings:Update();
+                        end
+                    end
+                    imgui.ShowHelp('Applies the selected layout to your double display.', true);
+                    imgui.TextColored(header, 'Layout Files');
                     if (imgui.Button('Refresh')) then
                         GetLayouts();
                     end
                     imgui.ShowHelp('Reloads available layouts from disk.', true);
-                    imgui.SameLine();
-                    if (imgui.Button('Apply')) then
-                        local layout = state.Layouts[state.SelectedLayout];
-                        if (layout == nil) then
-                            print(chat.header(addon.name) .. chat.error('You must select a valid layout to apply it.'));
-                        else
-                            gInterface:Initialize(layout);
-                        end
-                    end
-                    imgui.ShowHelp('Applies the selected layout to your display.', true);
-                    CheckBox('Clickable', 'ClickToActivate');
-                    imgui.ShowHelp('Makes macros activate when their icon is left clicked.');
-                    imgui.TextColored(header, 'Components');
+                    imgui.EndTabItem();
+                end
+                
+                if imgui.BeginTabItem('Components##tCrossbarConfigComponentsTab') then
                     imgui.BeginGroup();
                     CheckBox('Cost', 'ShowCost');
                     imgui.ShowHelp('Display action cost indicators.');
@@ -203,6 +287,13 @@ function exposed:Render()
                     CheckBox('SC Animation', 'ShowSkillchainAnimation');
                     imgui.ShowHelp('Animates a border around weaponskill icons when a skillchain would be formed.');                
                     imgui.EndGroup();
+                end
+                
+                if imgui.BeginTabItem('Behavior##tCrossbarConfigBehaviorTab') then
+                    imgui.BeginGroup();
+                    imgui.TextColored(header, 'Macro Elements');
+                    CheckBox('Clickable', 'ClickToActivate');
+                    imgui.ShowHelp('Makes macros activate when their icon is left clicked.');
                     imgui.TextColored(header, 'Hide UI');
                     CheckBox('While Zoning', 'HideWhileZoning');
                     imgui.ShowHelp('Hides UI while you are zoning or on title screen.');
@@ -212,6 +303,7 @@ function exposed:Render()
                     imgui.ShowHelp('Hides UI while the map is the topmost menu.');                    
                     imgui.EndTabItem();
                 end
+                
                 if imgui.BeginTabItem('Controller##tCrossbarControlsAppearanceTab') then
                     imgui.TextColored(header, 'Device Mapping');
                     if (imgui.BeginCombo('##tCrossBarControllerSelectConfig', state.Controllers[state.SelectedController], ImGuiComboFlags_None)) then
@@ -265,10 +357,12 @@ function exposed:Render()
             end
             imgui.End();
         end
+    end
 
-        if (state.DragMode ~= 'Disabled') then
-            return state.DragTarget;
-        end
+    if state.IsOpen[1] and (state.DragMode ~= 'Disabled') then
+        self.ForceDisplay = state.DragTarget;
+    else
+        self.ForceDisplay = nil;
     end
 end
 

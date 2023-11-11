@@ -1,3 +1,4 @@
+local chat = require('chat');
 local playerData = {
     Abilities = T{},
     Spells = T{},

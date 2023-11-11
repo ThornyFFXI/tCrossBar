@@ -298,10 +298,13 @@ function Updater:Tick()
     local recastReady, recastDisplay  = self.RecastFunction(self.Resource);
     local abilityAvailable            = player:KnowsAbility(self.Resource.Id);
     local abilityCostDisplay, costMet = self:CostFunction(recastReady);
+    if (type(recastReady) == 'number') then
+        recastReady = (recastReady > 0);
+    end
 
     self.State.Available = abilityAvailable;
     self.State.Cost = abilityCostDisplay;
-    self.State.Ready = ((costMet == true) and ((recastReady > 0) or (recastReady == true)));
+    self.State.Ready = (costMet == true) and (recastReady == true);
     self.State.Recast = recastDisplay;
     self.State.Skillchain = nil;
 end
