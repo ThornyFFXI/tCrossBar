@@ -299,7 +299,7 @@ function Updater:Tick()
     local abilityAvailable            = player:KnowsAbility(self.Resource.Id);
     local abilityCostDisplay, costMet = self:CostFunction(recastReady);
     if (type(recastReady) == 'number') then
-        recastReady = (recastReady > 0);
+        recastReady = (recastReady == 0);
     end
 
     self.State.Available = abilityAvailable;

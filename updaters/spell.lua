@@ -408,7 +408,7 @@ function Updater:UpdateSkillchain()
         return;
     end
 
-    local resonation, result = skillchain:GetSkillchainBySpell(target, self.Resource.Id);
+    local resonation, result = skillchain:GetSkillchainBySpell(target, self.Resource.Index);
     if (resonation == nil) or (resonation.WindowClose < os.clock()) then
         return;
     end

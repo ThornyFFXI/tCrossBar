@@ -724,8 +724,8 @@ function exposed:Render()
                     local width = 32;
                     local height = 32;
                     if layout then
-                        width = layout.SingleDisplay.ImageObjects.Icon.Width;
-                        height = layout.SingleDisplay.ImageObjects.Icon.Height;
+                        width = layout.Icon.Width;
+                        height = layout.Icon.Height;
                     end
                     imgui.BeginChild('AppearanceChild', { 253, 235 + height }, true);
                     imgui.TextColored(header, 'Image');

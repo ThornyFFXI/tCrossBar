@@ -1,204 +1,156 @@
-local theme = {
-    --[[
-        Path to images..
-        First checks absolute path.
-        Next checks: ashita/config/addons/addonname/resources/
-        Finally checks: ashita/addons/addonname/resources/
-    ]]--
-    CrossPath = 'misc/cross.png',
-    TriggerPath = 'misc/trigger.png',
-
-    --How transparent icons should become when on cooldown (0 = fully transparent, 1 = opaque)
-    IconFadeAlpha = 0.5,
-    
-    --Time, in seconds, to wait between advancing frames of skillchain animation.
-    SkillchainAnimationTime = 0.08,
-
-    --This is checked the same way, and can contain any amount of frames.  Frames cycle back to first after last is completed.
-    SkillchainAnimationPaths = T{
-        'misc/crawl1.png',
-        'misc/crawl2.png',
-        'misc/crawl3.png',
-        'misc/crawl4.png',
-        'misc/crawl5.png',
-        'misc/crawl6.png',
-        'misc/crawl7.png'
-    },
-
-    --Display used when showing a specific macro combination, 8 button squares total.
-    SingleDisplay = {
-        FontObjects = {
-            --[[
-                OffsetX: Distance from the top left of individual square object.
-                OffsetY: Distance from the top right of individual square object.
-                BoxWidth: Width of the box for text to be drawn into.
-                BoxHeight: Height of the box for text to be drawn into.
-                OutlineWidth: Width of the text outline.
-                FontHeight: Height of the font.
-                FontFamily: Font Family.
-                FontFlags: bitflags for font modifiers
-                0x01 - Bold
-                0x02 - Italic
-                0x04 - Underline
-                0x08 - Strikeout
-                FontAlignment: Font alignment within the box
-                0x00 - Left Aligned
-                0x01 - Center Aligned
-                0x02 - Right Aligned
-                FontColor - Hex ARGB value, highest significance byte is alpha.
-                OutlineColor - Hex ARGB value, highest significance byte is alpha.
-            ]]--
-            Cost = {
-                OffsetX = 11,
-                OffsetY = 31,
-                BoxWidth = 40,
-                BoxHeight = 9,
-                OutlineWidth = 2,
-                FontHeight = 9,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 2,
-                FontColor = 0xFF389609,
-                OutlineColor = 0xFF000000,
-            },
-            Macro = {
-                OffsetX = 11,
-                OffsetY = 2,
-                BoxWidth = 40,
-                BoxHeight = 13,
-                OutlineWidth = 1,
-                FontHeight = 12,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 0,
-                FontColor = 0xFFFFFFFF,
-                OutlineColor = 0xFF000000,
-            },
-            Name = {
-                OffsetX = 0,
-                OffsetY = 44,
-                BoxWidth = 58,
-                BoxHeight = 12,
-                OutlineWidth = 2,
-                FontHeight = 9,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 1,
-                FontColor = 0xFFFFFFFF,
-                OutlineColor = 0xFF000000,
-            },
-            Recast = {
-                OffsetX = 11,
-                OffsetY = 31,
-                BoxWidth = 40,
-                BoxHeight = 9,
-                OutlineWidth = 2,
-                FontHeight = 9,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 0,
-                FontColor = 0xFFBFCC04,
-                OutlineColor = 0xFF000000,
-            },
+return {
+    Single = {
+        --Amount is not fixed, you can adjust as desired.
+        SkillchainFrames = T{
+            'misc/crawl1.png',
+            'misc/crawl2.png',
+            'misc/crawl3.png',
+            'misc/crawl4.png',
+            'misc/crawl5.png',
+            'misc/crawl6.png',
+            'misc/crawl7.png'
         },
 
-        ImageObjects = {
-            --[[
-                OffsetX: Distance from the top left of individual square object.
-                OffsetY: Distance from the top right of individual square object.
-                Width: Width of image to be drawn.
-                Height: Height of image to be drawn.
-            ]]--
-            Frame = {
-                OffsetX = 9,
-                OffsetY = 0,
-                Width = 44,
-                Height = 44
-            },
-            Icon = {
-                OffsetX = 11,
-                OffsetY = 2,
-                Width = 40,
-                Height = 40
-            },
-            Overlay = {
-                OffsetX = 11,
-                OffsetY = 2,
-                Width = 40,
-                Height = 40
-            },
-        },
-
-        Primitives = {
-            {
-                File            = 'misc/dpad.png',
-                OffsetX         = 69,
-                OffsetY         = 57,
-                texture         = nil,
-                texture_offset_x= 0.0,
-                texture_offset_y= 0.0,
-                border_visible  = false,
-                border_color    = 0x00000000,
-                border_flags    = FontBorderFlags.None,
-                border_sizes    = '0,0,0,0',
-                visible         = true,
-                position_x      = 0,
-                position_y      = 0,
-                can_focus       = false,
-                locked          = false,
-                lockedz         = false,
-                scale_x         = 1.0,
-                scale_y         = 1.0,
-                width           = 40,
-                height          = 40,
-                color           = 0xFFFFFFFF,
-            },
-            {
-                File            = 'misc/buttons.png',
-                OffsetX         = 243,
-                OffsetY         = 57,
-                texture         = nil,
-                texture_offset_x= 0.0,
-                texture_offset_y= 0.0,
-                border_visible  = false,
-                border_color    = 0x00000000,
-                border_flags    = FontBorderFlags.None,
-                border_sizes    = '0,0,0,0',
-                visible         = true,
-                position_x      = 0,
-                position_y      = 0,
-                can_focus       = false,
-                locked          = false,
-                lockedz         = false,
-                scale_x         = 1.0,
-                scale_y         = 1.0,
-                width           = 40,
-                height          = 40,
-                color           = 0xFFFFFFFF,
-            },
-        },
-
-        --Path to frame image
-        FramePath = 'misc/frame.png',
-
-        --Height of the full graphics object used to render all squares.  All squares *MUST* fully fit within this panel.
-        PanelHeight = 168,
-
-        --Width of the full graphics object used to render all squares.  All squares *MUST* fully fit within this panel.
-        PanelWidth = 358,
-
-        --Default position for object.  Set later in this theme using scaling lib.
-        DefaultX = 0,
-        DefaultY = 0,
-
-        --Height of an individual square object.
-        SquareHeight = 58,
-
-        --Width of an individual square object.
-        SquareWidth = 58,
+        --Time, in seconds, between frame changes for skillchain animation.
+        SkillchainFrameLength = 0.08,
 
         --[[
-            Table of square objects, where each entry must be a table with attributes PositionX, PositionY.
+            Textures to be preloaded and sized.
+            Can be a string, or a table with Path, Width, and Height entries.
+            If using a string, will be sized to match the Width and Height specified for Icon.
+        ]]--
+        Textures = T{
+            Cross         = 'misc/cross.png',
+            Frame         = { Path='misc/frame.png', Width=44, Height=44 },
+            Trigger       = 'misc/trigger.png',
+            Liquefaction  = 'skillchains/Liquefaction.png',
+            Scission      = 'skillchains/Scission.png',
+            Reverberation = 'skillchains/Reverberation.png',
+            Detonation    = 'skillchains/Detonation.png',
+            Induration    = 'skillchains/Induration.png',
+            Impaction     = 'skillchains/Impaction.png',
+            Transfixion   = 'skillchains/Transfixion.png',
+            Compression   = 'skillchains/Compression.png',
+            Fusion        = 'skillchains/Fusion.png',
+            Gravitation   = 'skillchains/Gravitation.png',
+            Distortion    = 'skillchains/Distortion.png',
+            Fragmentation = 'skillchains/Fragmentation.png',
+            Light         = 'skillchains/Light.png',
+            Darkness      = 'skillchains/Darkness.png',
+            Buttons       = { Path='misc/buttons.png', Width=40, Height=40 },
+            Dpad          = { Path='misc/dpad.png', Width=40, Height=40 },
+            DragHandle    = { Path='misc/drag.png', Width=25, Height=25 },
+        },
+
+        --Transparency to be used when bound macro's action is not known.  [0-255]
+        FadeOpacity = 128,
+        
+        --Opacity of the overlay shown when a macro is activated.  [0-255]
+        TriggerOpacity = 128,
+
+        --The border of each macro element.  Offsets are relative to the macro element's placement.
+        Frame = {
+            OffsetX = 0,
+            OffsetY = 0,
+        },
+
+        --The inner icon for each macro element.  Offsets are relative to the macro element's placement.
+        Icon = {
+            OffsetX = 2,
+            OffsetY = 2,
+            Width = 40,
+            Height = 40,
+        },
+
+        --The text object to display macro or hotkey activation.
+        Hotkey = {
+            --If box height/width are specified, text object will not go past those bounds.
+            --Otherwise, text object will be as large as necessary.
+            box_height = 0,
+            box_width = 0,
+
+            --See gdifonts/include for flags and usage..
+            font_alignment = 0,
+            font_color = 0xFFFFFFFF,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 12,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 1,
+
+            OffsetX = 2,
+            OffsetY = 2,
+        },
+        Cost = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 2,
+            font_color = 0xFF389609,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 9,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 42,
+            OffsetY = 31,
+        },
+        Recast = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 0,
+            font_color = 0xFFBFCC04,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 9,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 2,
+            OffsetY = 31,
+        },
+        Name = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 1,
+            font_color = 0xFFFFFFFF,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 9,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 22,
+            OffsetY = 44,
+        },
+
+        --Texture must be defined in textures table.  Objects are rendered in order, prior to square elements.
+        FixedObjects = T{
+            T{
+                OffsetX = 60,
+                OffsetY = 57,
+                Texture = 'Buttons',
+            },
+            T{
+                OffsetX = 234,
+                OffsetY = 57,
+                Texture = 'Dpad',
+            },
+        },
+
+        --Size of hitbox for entire element.
+        Panel = {
+            Width = 358,
+            Height = 168,
+        },
+
+        --[[
+            Table of element positions.  SingleDisplay has 8 elements.
             Objects are ordered(according to default controller layout):
                 1. Dpad Up
                 2. Dpad Right
@@ -210,8 +162,7 @@ local theme = {
                 8. Button Left
             Must remain 8 objects.
         ]]--
-        
-        Squares = T{
+        Elements = T{
             { OffsetX = 58, OffsetY = 0 },
             { OffsetX = 116, OffsetY = 55 },
             { OffsetX = 58, OffsetY = 110 },
@@ -222,233 +173,171 @@ local theme = {
             { OffsetX = 174, OffsetY = 55 },
         },
     },
-    --Display used when showing default display, 16 button squares total.
-    DoubleDisplay = {
-        FontObjects = {
-            --[[
-                OffsetX: Distance from the top left of individual square object.
-                OffsetY: Distance from the top right of individual square object.
-                BoxWidth: Width of the box for text to be drawn into.
-                BoxHeight: Height of the box for text to be drawn into.
-                OutlineWidth: Width of the text outline.
-                FontHeight: Height of the font.
-                FontFamily: Font Family.
-                FontFlags: bitflags for font modifiers
-                0x01 - Bold
-                0x02 - Italic
-                0x04 - Underline
-                0x08 - Strikeout
-                FontAlignment: Font alignment within the box
-                0x00 - Left Aligned
-                0x01 - Center Aligned
-                0x02 - Right Aligned
-                FontColor - Hex ARGB value, highest significance byte is alpha.
-                OutlineColor - Hex ARGB value, highest significance byte is alpha.
-            ]]--
-            Cost = {
-                OffsetX = 11,
-                OffsetY = 31,
-                BoxWidth = 40,
-                BoxHeight = 9,
-                OutlineWidth = 2,
-                FontHeight = 9,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 2,
-                FontColor = 0xFF389609,
-                OutlineColor = 0xFF000000,
-            },
-            Macro = {
-                OffsetX = 11,
-                OffsetY = 2,
-                BoxWidth = 40,
-                BoxHeight = 13,
-                OutlineWidth = 1,
-                FontHeight = 12,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 0,
-                FontColor = 0xFFFFFFFF,
-                OutlineColor = 0xFF000000,
-            },
-            Name = {
-                OffsetX = 0,
-                OffsetY = 44,
-                BoxWidth = 58,
-                BoxHeight = 12,
-                OutlineWidth = 2,
-                FontHeight = 9,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 1,
-                FontColor = 0xFFFFFFFF,
-                OutlineColor = 0xFF000000,
-            },
-            Recast = {
-                OffsetX = 11,
-                OffsetY = 31,
-                BoxWidth = 40,
-                BoxHeight = 9,
-                OutlineWidth = 2,
-                FontHeight = 9,
-                FontFamily = 'Arial',
-                FontFlags = 0,
-                FontAlignment = 0,
-                FontColor = 0xFFBFCC04,
-                OutlineColor = 0xFF000000,
-            },
-        },
 
-        ImageObjects = {
-            --[[
-                OffsetX: Distance from the top left of individual square object.
-                OffsetY: Distance from the top right of individual square object.
-                Width: Width of image to be drawn.
-                Height: Height of image to be drawn.
-            ]]--
-            Frame = {
-                OffsetX = 9,
-                OffsetY = 0,
-                Width = 44,
-                Height = 44
-            },
-            Icon = {
-                OffsetX = 11,
-                OffsetY = 2,
-                Width = 40,
-                Height = 40
-            },
-            Overlay = {
-                OffsetX = 11,
-                OffsetY = 2,
-                Width = 40,
-                Height = 40
-            },
+    Double = {
+        --Amount is not fixed, you can adjust as desired.
+        SkillchainFrames = T{
+            'misc/crawl1.png',
+            'misc/crawl2.png',
+            'misc/crawl3.png',
+            'misc/crawl4.png',
+            'misc/crawl5.png',
+            'misc/crawl6.png',
+            'misc/crawl7.png'
         },
-
+    
+        --Time, in seconds, between frame changes for skillchain animation.
+        SkillchainFrameLength = 0.08,
+    
         --[[
-        Primitive objects to be drawn after drawing squares.
-        File will be resolved to resources directory(config then addon).
-        OffsetX and OffsetY are used for positioning.
-        All other fields are carried over to ashita's primitive library.
+            Textures to be preloaded and sized.
+            Can be a string, or a table with Path, Width, and Height entries.
+            If using a string, will be sized to match the Width and Height specified for Icon.
         ]]--
-        Primitives = {
-            {
-                File            = 'misc/dpad.png',
-                OffsetX         = 69,
-                OffsetY         = 57,
-                texture         = nil,
-                texture_offset_x= 0.0,
-                texture_offset_y= 0.0,
-                border_visible  = false,
-                border_color    = 0x00000000,
-                border_flags    = FontBorderFlags.None,
-                border_sizes    = '0,0,0,0',
-                visible         = true,
-                position_x      = 0,
-                position_y      = 0,
-                can_focus       = false,
-                locked          = false,
-                lockedz         = false,
-                scale_x         = 1.0,
-                scale_y         = 1.0,
-                width           = 40,
-                height          = 40,
-                color           = 0xFFFFFFFF,
+        Textures = T{
+            Cross         = 'misc/cross.png',
+            Frame         = { Path='misc/frame.png', Width=44, Height=44 },
+            Trigger       = 'misc/trigger.png',
+            Liquefaction  = 'skillchains/Liquefaction.png',
+            Scission      = 'skillchains/Scission.png',
+            Reverberation = 'skillchains/Reverberation.png',
+            Detonation    = 'skillchains/Detonation.png',
+            Induration    = 'skillchains/Induration.png',
+            Impaction     = 'skillchains/Impaction.png',
+            Transfixion   = 'skillchains/Transfixion.png',
+            Compression   = 'skillchains/Compression.png',
+            Fusion        = 'skillchains/Fusion.png',
+            Gravitation   = 'skillchains/Gravitation.png',
+            Distortion    = 'skillchains/Distortion.png',
+            Fragmentation = 'skillchains/Fragmentation.png',
+            Light         = 'skillchains/Light.png',
+            Darkness      = 'skillchains/Darkness.png',
+            Buttons       = { Path='misc/buttons.png', Width=40, Height=40 },
+            Dpad          = { Path='misc/dpad.png', Width=40, Height=40 },
+            DragHandle    = { Path='misc/drag.png', Width=25, Height=25 },
+        },
+    
+        --Transparency to be used when bound macro's action is not known.  [0-255]
+        FadeOpacity = 128,
+        
+        --Opacity of the overlay shown when a macro is activated.  [0-255]
+        TriggerOpacity = 128,
+    
+        --The border of each macro element.  Offsets are relative to the macro element's placement.
+        Frame = {
+            OffsetX = 0,
+            OffsetY = 0,
+            Width = 44,
+            Height = 44,
+        },
+    
+        --The inner icon for each macro element.  Offsets are relative to the macro element's placement.
+        Icon = {
+            OffsetX = 2,
+            OffsetY = 2,
+            Width = 40,
+            Height = 40,
+        },
+    
+        --The text object to display macro or hotkey activation.
+        Hotkey = {
+            --If box height/width are specified, text object will not go past those bounds.
+            --Otherwise, text object will be as large as necessary.
+            box_height = 0,
+            box_width = 0,
+    
+            --See gdifonts/include for flags and usage..
+            font_alignment = 0,
+            font_color = 0xFFFFFFFF,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 12,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 1,
+    
+            OffsetX = 2,
+            OffsetY = 2,
+        },
+        Cost = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 2,
+            font_color = 0xFF389609,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 9,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 42,
+            OffsetY = 31,
+        },
+        Recast = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 0,
+            font_color = 0xFFBFCC04,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 9,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 2,
+            OffsetY = 31,
+        },
+        Name = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 1,
+            font_color = 0xFFFFFFFF,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 9,
+            gradient_color = 0x00000000,
+            gradient_style = 0,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 22,
+            OffsetY = 44,
+        },
+    
+        --Texture must be defined in textures table.  Objects are rendered in order, prior to square elements.
+        FixedObjects = T{
+            T{
+                OffsetX = 60,
+                OffsetY = 57,
+                Texture = 'Buttons',
             },
-            {
-                File            = 'misc/buttons.png',
-                OffsetX         = 243,
-                OffsetY         = 57,
-                texture         = nil,
-                texture_offset_x= 0.0,
-                texture_offset_y= 0.0,
-                border_visible  = false,
-                border_color    = 0x00000000,
-                border_flags    = FontBorderFlags.None,
-                border_sizes    = '0,0,0,0',
-                visible         = true,
-                position_x      = 0,
-                position_y      = 0,
-                can_focus       = false,
-                locked          = false,
-                lockedz         = false,
-                scale_x         = 1.0,
-                scale_y         = 1.0,
-                width           = 40,
-                height          = 40,
-                color           = 0xFFFFFFFF,
+            T{
+                OffsetX = 234,
+                OffsetY = 57,
+                Texture = 'Dpad',
             },
-            {
-                File            = 'misc/dpad.png',
-                OffsetX         = 457,
-                OffsetY         = 57,
-                texture         = nil,
-                texture_offset_x= 0.0,
-                texture_offset_y= 0.0,
-                border_visible  = false,
-                border_color    = 0x00000000,
-                border_flags    = FontBorderFlags.None,
-                border_sizes    = '0,0,0,0',
-                visible         = true,
-                position_x      = 0,
-                position_y      = 0,
-                can_focus       = false,
-                locked          = false,
-                lockedz         = false,
-                scale_x         = 1.0,
-                scale_y         = 1.0,
-                width           = 40,
-                height          = 40,
-                color           = 0xFFFFFFFF,
+            T{
+                OffsetX = 448,
+                OffsetY = 57,
+                Texture = 'Buttons',
             },
-            {
-                File            = 'misc/buttons.png',
-                OffsetX         = 631,
-                OffsetY         = 57,
-                texture         = nil,
-                texture_offset_x= 0.0,
-                texture_offset_y= 0.0,
-                border_visible  = false,
-                border_color    = 0x00000000,
-                border_flags    = FontBorderFlags.None,
-                border_sizes    = '0,0,0,0',
-                visible         = true,
-                position_x      = 0,
-                position_y      = 0,
-                can_focus       = false,
-                locked          = false,
-                lockedz         = false,
-                scale_x         = 1.0,
-                scale_y         = 1.0,
-                width           = 40,
-                height          = 40,
-                color           = 0xFFFFFFFF,
+            T{
+                OffsetX = 622,
+                OffsetY = 57,
+                Texture = 'Dpad',
             },
         },
-
-        --Path to frame image
-        FramePath = 'misc/frame.png',
-
-        --Height of the full graphics object used to render all squares.  All squares *MUST* fully fit within this panel.
-        PanelHeight = 168,
-
-        --Width of the full graphics object used to render all squares.  All squares *MUST* fully fit within this panel.
-        PanelWidth = 746,
-
-        --Default position for object.  Set later in this theme using scaling lib.
-        DefaultX = 0,
-        DefaultY = 0,
-
-        --Height of an individual square object.
-        SquareHeight = 58,
-
-        --Width of an individual square object.
-        SquareWidth = 58,
-
-
+    
+        --Size of hitbox for entire element.
+        Panel = {
+            Width = 746,
+            Height = 168,
+        },
+        
         --[[
-            Table of square objects, where each entry must be a table with attributes PositionX, PositionY.
+            Table of element positions.  DoubleDisplay has 16 elements.
             Objects are ordered(according to default controller layout):
                 1.  Dpad Up(L2)
                 2.  Dpad Right(L2)
@@ -466,10 +355,8 @@ local theme = {
                 14. Button Right(R2)
                 15. Button Down(R2)
                 16. Button Left(R2)
-            Must remain 16 objects.
         ]]--
-        
-        Squares = T{
+        Elements = T{
             { OffsetX = 58, OffsetY = 0 },
             { OffsetX = 116, OffsetY = 55 },
             { OffsetX = 58, OffsetY = 110 },
@@ -487,21 +374,5 @@ local theme = {
             { OffsetX = 620, OffsetY = 110 },
             { OffsetX = 562, OffsetY = 55 },
         },
-    },
-
+    }
 };
-
-local scaling = require('scaling');
-if ((scaling.window.w == -1) or (scaling.window.h == -1) or (scaling.menu.w == -1) or (scaling.menu.h == -1)) then
-    theme.SingleDisplay.DefaultX = 0;
-    theme.SingleDisplay.DefaultY = 0;
-    theme.DoubleDisplay.DefaultX = 0;
-    theme.DoubleDisplay.DefaultY = 0;
-else
-    theme.SingleDisplay.DefaultX = (scaling.window.w - theme.SingleDisplay.PanelWidth) / 2;
-    theme.SingleDisplay.DefaultY = scaling.window.h - (scaling.scale_height(136) + theme.SingleDisplay.PanelHeight);
-    theme.DoubleDisplay.DefaultX = (scaling.window.w - theme.DoubleDisplay.PanelWidth) / 2;
-    theme.DoubleDisplay.DefaultY = scaling.window.h - (scaling.scale_height(136) + theme.DoubleDisplay.PanelHeight);
-end
-
-return theme;

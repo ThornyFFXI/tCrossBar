@@ -105,7 +105,6 @@ local function ApplyBindings()
         end
     end
 
-    print('Updating bindings..');
     gSingleDisplay:UpdateBindings(output);
     gDoubleDisplay:UpdateBindings(output);
 end

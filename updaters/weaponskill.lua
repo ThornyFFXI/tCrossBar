@@ -69,7 +69,6 @@ end
 
 function Updater:Tick()
     local known = player:KnowsAbility(self.Resource.Id);
-    local activeSkillchain = self:UpdateSkillchain();
     
     self.State.Available = known;
     self.State.Cost = self:CostFunction();

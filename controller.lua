@@ -140,8 +140,14 @@ function controller:Tick()
             if (gBindingGUI:GetActive()) then
                 gBindingGUI:Close();
                 self.BindMenuState.Active = false;
+            elseif (not self.BindMenuState.Active) then
+                if (gSingleDisplay) then
+                    self.BindMenuState.Active = true;
+                else
+                    Error('Cannot open bind menu without a valid single display.  Please enter "/tc" to open the menu and select a valid layout.')
+                end
             else
-                self.BindMenuState.Active = not self.BindMenuState.Active;
+                self.BindMenuState.Active = false;
             end
             self.BindMenuState.Timer = nil;
         end

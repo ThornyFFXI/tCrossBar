@@ -182,7 +182,7 @@ function exposed:Render()
                     imgui.SliderFloat('##SingleScale', state.SingleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
                     if (state.DragMode == 'Disabled') then
                         if (imgui.Button('Move##MoveSingle')) then
-                            state.DragBuffer = gSettings.Position[gSettings.SingleLayout];
+                            state.DragBuffer = gSettings.SinglePosition[gSettings.SingleLayout];
                             state.DragMode = 'Pending';
                             state.DragTarget = gSingleDisplay;
                         end
@@ -190,8 +190,9 @@ function exposed:Render()
                         imgui.SameLine();
                     end
                     if (imgui.Button('Reset##ResetSingle')) then
-                        gSettings.Position[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
+                        gSettings.SinglePosition[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
                         gSingleDisplay:UpdatePosition();
+                        settings.save();
                     end
                     imgui.ShowHelp('Resets single display to default position.', true);
                     imgui.SameLine();
@@ -205,10 +206,11 @@ function exposed:Render()
                             gSettings.SingleScale = state.SingleScale[1];
                             gInitializer:ApplyLayout();
                             if updatePosition then
-                                gSettings.Position[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
+                                gSettings.SinglePosition[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
                                 gSingleDisplay:UpdatePosition();
                             end
                             gBindings:Update();
+                            settings.save();
                         end
                     end
                     imgui.ShowHelp('Applies the selected layout to your single display.', true);
@@ -225,7 +227,7 @@ function exposed:Render()
                     imgui.SliderFloat('##DoubleScale', state.DoubleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
                     if (state.DragMode == 'Disabled') then
                         if (imgui.Button('Move##MoveDouble')) then
-                            state.DragBuffer = gSettings.Position[gSettings.DoubleLayout];
+                            state.DragBuffer = gSettings.DoublePosition[gSettings.DoubleLayout];
                             state.DragMode = 'Pending';
                             state.DragTarget = gDoubleDisplay;
                         end
@@ -233,8 +235,9 @@ function exposed:Render()
                         imgui.SameLine();
                     end
                     if (imgui.Button('Reset##ResetDouble')) then
-                        gSettings.Position[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
-                        gDoubleDisplay:UpdatePosition();
+                        gSettings.DoublePosition[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
+                        gDoubleDisplay:UpdatePosition(); 
+                        settings.save();
                     end
                     imgui.ShowHelp('Resets double display to default position.', true);
                     imgui.SameLine();
@@ -248,10 +251,11 @@ function exposed:Render()
                             gSettings.DoubleScale = state.DoubleScale[1];
                             gInitializer:ApplyLayout();
                             if updatePosition then
-                                gSettings.Position[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
+                                gSettings.DoublePosition[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
                                 gDoubleDisplay:UpdatePosition();
                             end
                             gBindings:Update();
+                            settings.save();
                         end
                     end
                     imgui.ShowHelp('Applies the selected layout to your double display.', true);
@@ -265,8 +269,21 @@ function exposed:Render()
                 
                 if imgui.BeginTabItem('Components##tCrossbarConfigComponentsTab') then
                     imgui.BeginGroup();
+                    CheckBox('Empty', 'ShowEmpty');
+                    imgui.ShowHelp('Display empty macro elements.');
+                    CheckBox('Frame', 'ShowFrame');
+                    imgui.ShowHelp('Display frame for macro elements.');
                     CheckBox('Cost', 'ShowCost');
                     imgui.ShowHelp('Display action cost indicators.');
+                    CheckBox('Trigger', 'ShowTrigger');
+                    imgui.ShowHelp('Shows an overlay when you activate an action.');
+                    CheckBox('SC Icon', 'ShowSkillchainIcon');
+                    imgui.ShowHelp('Overrides weaponskill icons when a skillchain would be formed.');
+                    CheckBox('SC Animation', 'ShowSkillchainAnimation');
+                    imgui.ShowHelp('Animates a border around weaponskill icons when a skillchain would be formed.');
+                    imgui.EndGroup();
+                    imgui.SameLine();
+                    imgui.BeginGroup();
                     CheckBox('Cross', 'ShowCross');
                     imgui.ShowHelp('Displays a X over actions you don\'t currently know.');
                     CheckBox('Fade', 'ShowFade');
@@ -275,18 +292,10 @@ function exposed:Render()
                     imgui.ShowHelp('Shows action recast timers.');
                     CheckBox('Hotkey', 'ShowHotkey');
                     imgui.ShowHelp('Shows hotkey labels.');
-                    imgui.EndGroup();
-                    imgui.SameLine();
-                    imgui.BeginGroup();
                     CheckBox('Name', 'ShowName');
                     imgui.ShowHelp('Shows action names.');
-                    CheckBox('Trigger', 'ShowTrigger');
-                    imgui.ShowHelp('Shows an overlay when you activate an action.');
-                    CheckBox('SC Icon', 'ShowSkillchainIcon');
-                    imgui.ShowHelp('Overrides weaponskill icons when a skillchain would be formed.');
-                    CheckBox('SC Animation', 'ShowSkillchainAnimation');
-                    imgui.ShowHelp('Animates a border around weaponskill icons when a skillchain would be formed.');                
                     imgui.EndGroup();
+                    imgui.EndTabItem();
                 end
                 
                 if imgui.BeginTabItem('Behavior##tCrossbarConfigBehaviorTab') then
@@ -294,17 +303,36 @@ function exposed:Render()
                     imgui.TextColored(header, 'Macro Elements');
                     CheckBox('Clickable', 'ClickToActivate');
                     imgui.ShowHelp('Makes macros activate when their icon is left clicked.');
+                    imgui.TextColored(header, 'Trigger Duration');
+                    local buff = { gSettings.TriggerDuration };
+                    if imgui.SliderFloat('##TriggerDurationSlider', buff, 0.01, 1.5, '%.2f', ImGuiSliderFlags_AlwaysClamp) then
+                        gSettings.TriggerDuration = buff[1];
+                        settings.save();
+                    end
+                    imgui.ShowHelp('Determines how long the activation flash occurs for when ShowTrigger is enabled.')
                     imgui.TextColored(header, 'Hide UI');
                     CheckBox('While Zoning', 'HideWhileZoning');
                     imgui.ShowHelp('Hides UI while you are zoning or on title screen.');
                     CheckBox('During Cutscenes', 'HideWhileCutscene');
                     imgui.ShowHelp('Hides UI while the game event system is active.');
                     CheckBox('While Map Open', 'HideWhileMap');
-                    imgui.ShowHelp('Hides UI while the map is the topmost menu.');                    
+                    imgui.ShowHelp('Hides UI while the map is the topmost menu.');
+                    imgui.TextColored(header, 'Combo Behavior');
+                    CheckBox('Combo Priority', 'EnablePriority');
+                    imgui.ShowHelp('When enabled, pressing LR then R2 will be a seperate set from pressing R2 then L2.  When disabled, order won\'t matter.');
+                    CheckBox('Double Tap', 'EnableDoubleTap');
+                    imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
+                    CheckBox('Always Show Double', 'ShowDoubleDisplay');
+                    imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
+                    CheckBox('Condense To Single', 'SwapToSingleDisplay');
+                    imgui.ShowHelp('When enabled, pressing L2 or R2 will show only the relevant set instead of both sets.');
+                    imgui.TextColored(header, 'Binding Menu');
+                    CheckBox('Default To <st>', 'DefaultSelectTarget');
+                    imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');
                     imgui.EndTabItem();
                 end
                 
-                if imgui.BeginTabItem('Controller##tCrossbarControlsAppearanceTab') then
+                if imgui.BeginTabItem('Controller##tCrossbarControlseTab') then
                     imgui.TextColored(header, 'Device Mapping');
                     if (imgui.BeginCombo('##tCrossBarControllerSelectConfig', state.Controllers[state.SelectedController], ImGuiComboFlags_None)) then
                         for index,controller in ipairs(state.Controllers) do
@@ -330,18 +358,22 @@ function exposed:Render()
                         end
                     end
                     imgui.ShowHelp('Loads the selected device mapping.', true);
-                    CheckBox('Combo Priority', 'EnablePriority');
-                    imgui.ShowHelp('When enabled, pressing LR then R2 will be a seperate set from pressing R2 then L2.  When disabled, order won\'t matter.');
-                    CheckBox('Double Tap', 'EnableDoubleTap');
-                    imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
-                    CheckBox('Always Show Double', 'ShowDoubleDisplay');
-                    imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
-                    CheckBox('Condense To Single', 'SwapToSingleDisplay');
-                    imgui.ShowHelp('When enabled, pressing L2 or R2 will show only the relevant set instead of both sets.');
                     CheckBox('Inventory Passthrough', 'AllowInventoryPassthrough');
                     imgui.ShowHelp('When enabled, L2/R2/ZL/ZR will be passed to the game when inventory is the topmost menu.');
-                    CheckBox('Default To <st>', 'DefaultSelectTarget');
-                    imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');
+                    imgui.TextColored(header, 'Bind Menu Timer');
+                    local buff = { gSettings.BindMenuTimer };
+                    if imgui.SliderFloat('##BindMenuDurationSlider', buff, 0.1, 1.5, '%.2f', ImGuiSliderFlags_AlwaysClamp) then
+                        gSettings.BindMenuTimer = buff[1];
+                        settings.save();
+                    end
+                    imgui.ShowHelp('Determines how long the activation combo must be pressed to open or close binding menu.')
+                    imgui.TextColored(header, 'Double Tap Timer');
+                    local buff = { gSettings.TapTimer };
+                    if imgui.SliderFloat('##TapTimerSlider', buff, 0.1, 1.5, '%.2f', ImGuiSliderFlags_AlwaysClamp) then
+                        gSettings.TapTimer = buff[1];
+                        settings.save();
+                    end
+                    imgui.ShowHelp('Determines how long you have to double tap L2 or R2 when double tap mode is enabled.')
                     imgui.EndTabItem();
                 end                
                 if imgui.BeginTabItem('Binding##tCrossbarControlsBindingTab') then

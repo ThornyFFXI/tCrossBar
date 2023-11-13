@@ -52,7 +52,7 @@ function Element:New(hotkey, layout)
         Ready = false,
         Cost = '',
         Hotkey = hotkey,
-        Label = '',
+        Name = '',
         Recast = '',
         Skillchain = nil,
     };
@@ -122,17 +122,14 @@ function Element:SetPosition(position)
 end
 
 function Element:UpdateBinding(binding)
-    if (binding == self.Binding) then
-        return;
-    end
-
     if (self.Updater ~= nil) then
         self.Updater:Destroy();
     end
 
+    self.Icon = nil;
     self.Binding = binding;
     local updater = updaters.Empty;
-    self.State.Label = '';
+    self.State.Name = '';
     if (type(self.Binding) == 'table') then
         if (self.Binding.ActionType ~= nil) then
             local newUpdater = updaters[self.Binding.ActionType];
@@ -141,15 +138,27 @@ function Element:UpdateBinding(binding)
             end
         end
         if (type(self.Binding.Label) == 'string') then
-            self.State.Label = self.Binding.Label;
+            self.State.Name = self.Binding.Label;
         end
     end
 
     self.Updater = updater:New();
     self.Updater:Initialize(self, self.Binding);
+
+    if (self.Binding ~= nil) then
+        local tx = gTextureCache:GetTexture(self.Binding.Image);
+        local dimensions = { Width = self.Layout.Icon.Width, Height=self.Layout.Icon.Height };
+        if tx and dimensions then
+            local preparedTexture = {};
+            preparedTexture.Texture = tx.Texture;
+            preparedTexture.Rect = ffi.new('RECT', { 0, 0, tx.Width, tx.Height });
+            preparedTexture.Scale = ffi.new('D3DXVECTOR2', { dimensions.Width / tx.Width, dimensions.Height / tx.Height });
+            self.Icon = preparedTexture;
+        end
+    end
 end
 
-function Element:Render(sprite)
+function Element:RenderIcon(sprite)
     self.Updater:Tick();
 
     local positionX = self.PositionX;
@@ -174,23 +183,27 @@ function Element:Render(sprite)
     local icon = self.Icon;
     vec_position.x = positionX + layout.Icon.OffsetX;
     vec_position.y = positionY + layout.Icon.OffsetY;
-    if (self.Skillchain ~= nil) then
-        if (self.SkillchainAnimation == nil) then
-            self.SkillchainAnimation =
-            {
-                Frame = 1,
-                Time = os.clock();
-            };
-        elseif (os.clock() > (self.SkillchainAnimation.Time + layout.SkillchainFrameLength)) then
-            self.SkillchainAnimation.Frame = self.SkillchainAnimation.Frame + 1;
-            if (self.SkillchainAnimation.Frame > #layout.SkillchainFrames) then
-                self.SkillchainAnimation.Frame = 1;
+    if (self.State.Skillchain ~= nil) then
+        if (self.State.Skillchain.Open) then
+            if (self.SkillchainAnimation == nil) then
+                self.SkillchainAnimation =
+                {
+                    Frame = 1,
+                    Time = os.clock();
+                };
+            elseif (os.clock() > (self.SkillchainAnimation.Time + layout.SkillchainFrameLength)) then
+                self.SkillchainAnimation.Frame = self.SkillchainAnimation.Frame + 1;
+                if (self.SkillchainAnimation.Frame > #layout.SkillchainFrames) then
+                    self.SkillchainAnimation.Frame = 1;
+                end
+                self.SkillchainAnimation.Time = os.clock();
             end
-            self.SkillchainAnimation.Time = os.clock();
+        else
+            self.SkillchainAnimation = nil;
         end
         
         if (gSettings.ShowSkillchainIcon) and (self.Binding.ShowSkillchainIcon) then
-            icon = layout.Textures[self.Skillchain.Name];
+            icon = layout.Textures[self.State.Skillchain.Name];
         end
     else
         self.SkillchainAnimation = nil;
@@ -236,7 +249,16 @@ function Element:Render(sprite)
             sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, layout.TriggerOpacity);
         end
     end
+end
 
+function Element:RenderText(sprite)
+    if (self.Binding == nil) then
+        return;
+    end
+
+    local positionX = self.PositionX;
+    local positionY = self.PositionY;
+    
     --Draw text elements..
     for _,entry in ipairs(textOrder) do
         local setting = 'Show' .. entry;

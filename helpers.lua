@@ -42,6 +42,10 @@ function GetResourcePath(resource)
 end
 
 function LoadFile_s(filePath)
+    if (filePath == nil) then
+        return nil;
+    end
+    
     if not ashita.fs.exists(filePath) then
         return nil;
     end

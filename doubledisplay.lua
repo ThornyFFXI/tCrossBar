@@ -14,18 +14,19 @@ local function GetButtonAlias(comboIndex, buttonIndex)
     return string.format('%s:%d', macroComboBinds[comboIndex], buttonIndex);
 end
 
-local DoubleDisplay = {};
+local DoubleDisplay = { Valid = false };
 
 function DoubleDisplay:Destroy()
     self.Layout = nil;
     self.Elements = T{};
+    self.Valid = false;
 end
 
 function DoubleDisplay:Initialize(layout)
     self.Layout = layout;
     self.Elements = T{};
 
-    local position = gSettings.Position[gSettings.DoubleLayout];
+    local position = gSettings.DoublePosition[gSettings.DoubleLayout];
     for group = 0,1 do
         for macro = 1,8 do
             local index = (group * 8) + macro;
@@ -45,6 +46,8 @@ function DoubleDisplay:Initialize(layout)
             Error('Failed to create Sprite in DoubleDisplay:Initialize.');
         end
     end
+    
+    self.Valid = (self.Sprite ~= nil);
 end
 
 function DoubleDisplay:SetActivationTimer(macroState, macroIndex)
@@ -62,11 +65,11 @@ end
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
 function DoubleDisplay:Render(macroState)
-    if (self.Sprite == nil) then
+    if (self.Valid == false) then
         return;
     end
 
-    local pos = gSettings.Position[gSettings.DoubleLayout];
+    local pos = gSettings.DoublePosition[gSettings.DoubleLayout];
     local sprite = self.Sprite;
     sprite:Begin();
 
@@ -78,13 +81,21 @@ function DoubleDisplay:Render(macroState)
     end
 
     for _,element in ipairs(self.Elements) do
-        element:Render(sprite);
+        element:RenderIcon(sprite);
+    end
+    
+    for _,element in ipairs(self.Elements) do
+        element:RenderText(sprite);
     end
 
     sprite:End();
 end
 
 function DoubleDisplay:HandleMouse(e)
+    if (self.Valid == false) then
+        return;
+    end
+
     local macroState = gController:GetMacroState();
     if (macroState > 2) then
         return;
@@ -105,7 +116,11 @@ function DoubleDisplay:HandleMouse(e)
 end
 
 function DoubleDisplay:HitTest(x, y)
-    local pos = gSettings.Position[gSettings.DoubleLayout];
+    if (self.Valid == false) then
+        return;
+    end
+
+    local pos = gSettings.DoublePosition[gSettings.DoubleLayout];
     if (x < pos[1]) or (y < pos[2]) then
         return false;
     end
@@ -129,6 +144,10 @@ function DoubleDisplay:HitTest(x, y)
 end
 
 function DoubleDisplay:UpdateBindings(bindings)
+    if (self.Valid == false) then
+        return;
+    end
+
     for i = 1,8 do
         self.Elements[i]:UpdateBinding(bindings[GetButtonAlias(1, i)]);
         self.Elements[i + 8]:UpdateBinding(bindings[GetButtonAlias(2, i)]);
@@ -136,7 +155,11 @@ function DoubleDisplay:UpdateBindings(bindings)
 end
 
 function DoubleDisplay:UpdatePosition()
-    local position = gSettings.Position[gSettings.DoubleLayout];
+    if (self.Valid == false) then
+        return;
+    end
+
+    local position = gSettings.DoublePosition[gSettings.DoubleLayout];
 
     for _,element in ipairs(self.Elements) do
         element:SetPosition(position);

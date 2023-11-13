@@ -61,28 +61,14 @@ local defaultSettings = T{
     TapTimer = 0.4,
 
     --No Tab..
-    Position = T{},
+    SinglePosition = T{},
+    DoublePosition = T{},
 };
 gSettings = settings.load(defaultSettings);
 
---Gets target dimensions of texture from layout table..
-local function GetDimensions(layout, key)
-    for _,entry in ipairs(layout.FixedObjects) do
-        if (key == entry.Texture) then
-            return { Width=entry.Width, Height=entry.Height };
-        end
-    end
-
-    if (key == 'Frame') then
-        return { Width=layout.Frame.Width, Height=layout.Frame.Height };
-    end
-    
-    return { Width=layout.Icon.Width, Height=layout.Icon.Height };
-end
-
 --Creates textures, assigns 
 local function PrepareLayout(layout, scale)
-    for _,singleTable in ipairs(T{layout, layout.FixedObjects, layout.Elements}) do
+    for _,singleTable in ipairs(T{layout, layout.FixedObjects, layout.Elements, layout.Textures}) do
         for _,tableEntry in pairs(singleTable) do
             if (type(tableEntry) == 'table') then
                 if (tableEntry.OffsetX ~= nil) then
@@ -105,12 +91,17 @@ local function PrepareLayout(layout, scale)
     
     --Prepare textures for efficient rendering..
     for _,singleTable in ipairs(T{layout.SkillchainFrames, layout.Textures}) do
-        for key,path in pairs(singleTable) do
-            local tx = gTextureCache:GetTexture(path);
-            if tx then
-                --Get target dimensions and prepare a RECT and scale vector for rendering at that size..
-                local dimensions = GetDimensions(layout, key);
+        for key,entry in pairs(singleTable) do
+            local tx,dimensions;
+            if type(entry) == 'table' then
+                tx = gTextureCache:GetTexture(entry.Path)
+                dimensions = { Width=entry.Width, Height=entry.Height };
+            else
+                tx = gTextureCache:GetTexture(entry)
+                dimensions = { Width=layout.Icon.Width, Height=layout.Icon.Height };
+            end
 
+            if tx and dimensions then
                 local preparedTexture = {};
                 preparedTexture.Texture = tx.Texture;
                 preparedTexture.Rect = ffi.new('RECT', { 0, 0, tx.Width, tx.Height });
@@ -151,28 +142,28 @@ function Initializer:ApplyLayout()
 
     local singleLayout = LoadFile_s(GetResourcePath('layouts/' .. gSettings.SingleLayout));
     if singleLayout then
-        PrepareLayout(singleLayout, gSettings.SingleScale);
-        local position = gSettings.Position[gSettings.SingleLayout];
+        PrepareLayout(singleLayout.Single, gSettings.SingleScale);
+        local position = gSettings.SinglePosition[gSettings.SingleLayout];
         if position == nil then
-            gSettings.Position[gSettings.SingleLayout] = GetDefaultPosition(singleLayout);
+            gSettings.SinglePosition[gSettings.SingleLayout] = GetDefaultPosition(singleLayout.Single);
             settings.save();
         end
-        gSingleDisplay:Initialize(singleLayout);
+        gSingleDisplay:Initialize(singleLayout.Single);
     else
-        Error('Failed to load single layout.');
+        Error('Failed to load single layout.  Please enter "/tc" to open the menu and select a valid layout.');
     end
 
     local doubleLayout = LoadFile_s(GetResourcePath('layouts/' .. gSettings.DoubleLayout));
     if doubleLayout then
-        PrepareLayout(doubleLayout, gSettings.DoubleScale);
-        local position = gSettings.Position[gSettings.DoubleLayout];
+        PrepareLayout(doubleLayout.Double, gSettings.DoubleScale);
+        local position = gSettings.DoublePosition[gSettings.DoubleLayout];
         if position == nil then
-            gSettings.Position[gSettings.DoubleLayout] = GetDefaultPosition(doubleLayout);
+            gSettings.DoublePosition[gSettings.DoubleLayout] = GetDefaultPosition(doubleLayout.Double);
             settings.save();
         end
-        gDoubleDisplay:Initialize(doubleLayout);
+        gDoubleDisplay:Initialize(doubleLayout.Double);
     else
-        Error('Failed to load double layout.');
+        Error('Failed to load double layout.  Please enter "/tc" to open the menu and select a valid layout.');
     end
     
     gTextureCache:Clear();
@@ -186,5 +177,8 @@ end);
 
 Initializer:ApplyController();
 Initializer:ApplyLayout();
+if (gSingleDisplay) and (gDoubleDisplay) then
+    gBindings:Update();
+end
 
 return Initializer;

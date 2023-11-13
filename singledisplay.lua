@@ -14,18 +14,19 @@ local function GetButtonAlias(comboIndex, buttonIndex)
     return string.format('%s:%d', macroComboBinds[comboIndex], buttonIndex);
 end
 
-local SingleDisplay = {};
+local SingleDisplay = { Valid = false };
 
 function SingleDisplay:Destroy()
     self.Layout = nil;
     self.ElementGroups = T{};
+    self.Valid = false;
 end
 
 function SingleDisplay:Initialize(layout)
     self.Layout = layout;
     self.ElementGroups = T{};
 
-    local position = gSettings.Position[gSettings.SingleLayout];
+    local position = gSettings.SinglePosition[gSettings.SingleLayout];
 
     for group = 1,6 do
         self.ElementGroups[group] = T{};
@@ -46,9 +47,15 @@ function SingleDisplay:Initialize(layout)
             Error('Failed to create Sprite in SingleDisplay:Initialize.');
         end
     end
+    
+    self.Valid = (self.Sprite ~= nil);
 end
 
 function SingleDisplay:GetElementByMacro(macroState, macroIndex)
+    if (self.Valid == false) then
+        return;
+    end
+
     local group = self.ElementGroups[macroState];
     if (group ~= nil) then
         local element = group[macroIndex];
@@ -59,6 +66,10 @@ function SingleDisplay:GetElementByMacro(macroState, macroIndex)
 end
 
 function SingleDisplay:Activate(macroState, macroIndex)
+    if (self.Valid == false) then
+        return;
+    end
+
     local element = self:GetElementByMacro(macroState, macroIndex);
     if element then
         element:Activate();
@@ -69,11 +80,11 @@ end
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
 function SingleDisplay:Render(macroState)
-    if (self.Sprite == nil) or (macroState == 0) then
+    if (self.Valid == false) or (macroState == 0) then
         return;
     end
 
-    local pos = gSettings.Position[gSettings.SingleLayout];
+    local pos = gSettings.SinglePosition[gSettings.SingleLayout];
     local sprite = self.Sprite;
     sprite:Begin();
 
@@ -87,13 +98,20 @@ function SingleDisplay:Render(macroState)
     local group = self.ElementGroups[macroState];
     if group then
         for _,element in ipairs(group) do
-            element:Render(sprite);
+            element:RenderIcon(sprite);
+        end
+        for _,element in ipairs(group) do
+            element:RenderText(sprite);
         end
     end
     sprite:End();
 end
 
 function SingleDisplay:HandleMouse(e)
+    if (self.Valid == false) then
+        return;
+    end
+
     if (e.message == 513) then
         local hit, element = self:HitTest(e.x, e.y);
         if element ~= nil then
@@ -111,7 +129,11 @@ function SingleDisplay:HandleMouse(e)
 end
 
 function SingleDisplay:HitTest(x, y)
-    local pos = gSettings.Position[gSettings.SingleLayout];
+    if (self.Valid == false) then
+        return;
+    end
+
+    local pos = gSettings.SinglePosition[gSettings.SingleLayout];
     if (x < pos[1]) or (y < pos[2]) then
         return false;
     end
@@ -138,6 +160,10 @@ function SingleDisplay:HitTest(x, y)
 end
 
 function SingleDisplay:UpdateBindings(bindings)
+    if (self.Valid == false) then
+        return;
+    end
+
     for macroState,group in ipairs(self.ElementGroups) do
         for macroIndex,element in ipairs(group) do
             element:UpdateBinding(bindings[GetButtonAlias(macroState, macroIndex)]);
@@ -146,7 +172,11 @@ function SingleDisplay:UpdateBindings(bindings)
 end
 
 function SingleDisplay:UpdatePosition()
-    local position = gSettings.Position[gSettings.SingleLayout];
+    if (self.Valid == false) then
+        return;
+    end
+    
+    local position = gSettings.SinglePosition[gSettings.SingleLayout];
 
     for _,group in ipairs(self.ElementGroups) do
         for _,element in ipairs(group) do

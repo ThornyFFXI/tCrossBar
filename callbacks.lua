@@ -98,7 +98,9 @@ ashita.events.register('d3d_present', 'd3d_present_cb', function ()
         end
     end
 
-    renderTarget:Render(macroState);
+    if renderTarget then
+        renderTarget:Render(macroState);
+    end
 end);
 
 ashita.events.register('mouse', 'mouse_cb', function (e)
