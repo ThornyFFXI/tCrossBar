@@ -207,14 +207,14 @@ function exposed:Render()
                                 state.DragTarget.AllowDrag = true;
                             end
                         end
-                        imgui.ShowHelp('Allows you to drag the single display.', true);
+                        imgui.ShowHelp('Allows you to drag the double display.', true);
                         imgui.SameLine();
                         if (imgui.Button('Reset##ResetDouble')) then
                             gSettings.DoublePosition = GetDefaultPosition(gDoubleDisplay.Layout);
                             gDoubleDisplay:UpdatePosition();
                             settings.save();
                         end
-                        imgui.ShowHelp('Resets single display to default position.', true);
+                        imgui.ShowHelp('Resets double display to default position.', true);
                         imgui.SameLine();
                     end
                     if (imgui.Button('Apply##ApplyDouble')) then
