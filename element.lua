@@ -1,4 +1,5 @@
 local d3d8     = require('d3d8');
+local encoding = require('gdifonts.encoding');
 local ffi      = require('ffi');
 local gdi      = require('gdifonts.include');
 local updaters = {
@@ -28,7 +29,7 @@ local function DoMacro(macro)
         end
 
         if command then
-            AshitaCore:GetChatManager():QueueCommand(-1, command);
+            AshitaCore:GetChatManager():QueueCommand(-1, encoding:UTF8_To_ShiftJIS(command));
         end
         
         if type(waitTime) == 'number' then

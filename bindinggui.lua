@@ -1,5 +1,6 @@
 local d3d8 = require('d3d8');
 local d3d8_device = d3d8.get_device();
+local encoding = require('gdifonts.encoding');
 local ffi = require('ffi');
 local imgui = require('imgui');
 local inventory = require('state.inventory');
@@ -157,7 +158,7 @@ Setup.Ability = function(skipUpdate)
 
     state.Combos.Action = T{};
     for _,res in ipairs(state.ActionResources) do
-        state.Combos.Action:append(res.Name[1]);
+        state.Combos.Action:append(encoding:ShiftJIS_To_UTF8(res.Name[1]));
     end
 
     state.Indices.Action = 1;
@@ -224,12 +225,13 @@ Setup.Item = function(skipUpdate)
         local next = state.ActionResources[index + 1];
 
         --Show item id if multiple matching items..
-        if (prev) and (prev.Name[1] == res.Name[1]) then
-            state.Combos.Action:append(string.format('%s[%u]', res.Name[1], res.Id));            
-        elseif (next) and (next.Name[1] == res.Name[1]) then
-            state.Combos.Action:append(string.format('%s[%u]', res.Name[1], res.Id));
+        local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
+        if (prev) and (prev.Name[1] == name) then
+            state.Combos.Action:append(string.format('%s[%u]', name, res.Id));            
+        elseif (next) and (next.Name[1] == name) then
+            state.Combos.Action:append(string.format('%s[%u]', name, res.Id));
         else
-            state.Combos.Action:append(res.Name[1]);
+            state.Combos.Action:append(name);
         end
     end
 
@@ -283,7 +285,7 @@ Setup.Spell = function(skipUpdate)
 
     state.Combos.Action = T{};
     for _,res in ipairs(state.ActionResources) do
-        state.Combos.Action:append(res.Name[1]);
+        state.Combos.Action:append(encoding:ShiftJIS_To_UTF8(res.Name[1]));
     end
 
     if (not skipUpdate) then
@@ -337,7 +339,7 @@ Setup.Trust = function(skipUpdate)
 
     state.Combos.Action = T{};
     for _,res in ipairs(state.ActionResources) do
-        state.Combos.Action:append(res.Name[1]);
+        state.Combos.Action:append(encoding:ShiftJIS_To_UTF8(res.Name[1]));
     end
 
     if (not skipUpdate) then
@@ -363,7 +365,7 @@ Setup.Weaponskill = function(skipUpdate)
 
     state.Combos.Action = T{};
     for _,res in ipairs(state.ActionResources) do
-        state.Combos.Action:append(res.Name[1]);
+        state.Combos.Action:append(encoding:ShiftJIS_To_UTF8(res.Name[1]));
     end
 
     if (not skipUpdate) then
@@ -387,16 +389,17 @@ end
 
 Update.Ability = function(index)
     local res = state.ActionResources[index];
+    local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
     if (bit.band(res.Targets, 0xFC) ~= 0) then
         if (gSettings.DefaultSelectTarget) then
-            state.MacroText = { string.format('/ja \"%s\" <st>', res.Name[1]) };
+            state.MacroText = { string.format('/ja \"%s\" <st>', name) };
         else
-            state.MacroText = { string.format('/ja \"%s\" <t>', res.Name[1]) };
+            state.MacroText = { string.format('/ja \"%s\" <t>', name) };
         end
     else
-        state.MacroText = { string.format('/ja \"%s\" <me>', res.Name[1]) };
+        state.MacroText = { string.format('/ja \"%s\" <me>', name) };
     end
-    state.MacroLabel = { res.Name[1] };
+    state.MacroLabel = { name };
     if ((res.RecastTimerId == 0) or (res.RecastTimerId == 254)) then
         state.MacroImage = { 'abilities/1hr.png' };
     else
@@ -428,16 +431,17 @@ end
 
 Update.Item = function(index)
     local res = state.ActionResources[index];
+    local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
     if (bit.band(res.Targets, 0xFC) ~= 0) then
         if (gSettings.DefaultSelectTarget) then
-            state.MacroText = { string.format('/item \"%s\" <st>', res.Name[1]) };
+            state.MacroText = { string.format('/item \"%s\" <st>', name) };
         else
-            state.MacroText = { string.format('/item \"%s\" <t>', res.Name[1]) };
+            state.MacroText = { string.format('/item \"%s\" <t>', name) };
         end
     else
-        state.MacroText = { string.format('/item \"%s\" <me>', res.Name[1]) };
+        state.MacroText = { string.format('/item \"%s\" <me>', name) };
     end
-    state.MacroLabel = { res.Name[1] };
+    state.MacroLabel = { name };
     state.MacroImage = { string.format('ITEM:%u', res.Id) };
     state.CostOverride = nil;
     UpdateMacroImage();
@@ -445,16 +449,17 @@ end
 
 Update.Spell = function(index)
     local res = state.ActionResources[index];
+    local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
     if (bit.band(res.Targets, 0xFC) ~= 0) then
         if (gSettings.DefaultSelectTarget) then
-            state.MacroText = { string.format('/ma \"%s\" <st>', res.Name[1]) };
+            state.MacroText = { string.format('/ma \"%s\" <st>', name) };
         else
-            state.MacroText = { string.format('/ma \"%s\" <t>', res.Name[1]) };
+            state.MacroText = { string.format('/ma \"%s\" <t>', name) };
         end
     else
-        state.MacroText = { string.format('/ma \"%s\" <me>', res.Name[1]) };
+        state.MacroText = { string.format('/ma \"%s\" <me>', name) };
     end
-    state.MacroLabel = { res.Name[1] };
+    state.MacroLabel = { name };
     state.MacroImage = { string.format('spells/%u.png', res.Index) };
     state.CostOverride = { '' };
     UpdateMacroImage();
@@ -462,8 +467,9 @@ end
 
 Update.Trust = function(index)
     local res = state.ActionResources[index];
-    state.MacroText = { string.format('/ma \"%s\" <me>', res.Name[1]) };
-    state.MacroLabel = { res.Name[1] };
+    local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
+    state.MacroText = { string.format('/ma \"%s\" <me>', name) };
+    state.MacroLabel = { name };
     state.MacroImage = { string.format('spells/%u.png', res.Index) };
     state.CostOverride = { '' };
     UpdateMacroImage();
@@ -471,16 +477,17 @@ end
 
 Update.Weaponskill = function(index)
     local res = state.ActionResources[index];
+    local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
     if (bit.band(res.Targets, 0xFC) ~= 0) then
         if (gSettings.DefaultSelectTarget) then
-            state.MacroText = { string.format('/ws \"%s\" <st>', res.Name[1]) };
+            state.MacroText = { string.format('/ws \"%s\" <st>', name) };
         else
-            state.MacroText = { string.format('/ws \"%s\" <t>', res.Name[1]) };
+            state.MacroText = { string.format('/ws \"%s\" <t>', name) };
         end
     else
-        state.MacroText = { string.format('/ws \"%s\" <me>', res.Name[1]) };
+        state.MacroText = { string.format('/ws \"%s\" <me>', name) };
     end
-    state.MacroLabel = { res.Name[1] };
+    state.MacroLabel = { name };
     state.MacroImage = { wsmap[res.Id] or '' };
     state.CostOverride = { '' };
     UpdateMacroImage();
@@ -912,7 +919,7 @@ function exposed:Show(macroState, macroButton)
 
             state.Combos.Action = T{};
             for _,res in ipairs(state.ActionResources) do
-                state.Combos.Action:append(res.Name[1]);
+                state.Combos.Action:append(encoding:ShiftJIS_To_UTF8(res.Name[1]));
             end
         end
         
@@ -934,7 +941,7 @@ function exposed:Show(macroState, macroButton)
 
             state.Combos.Action = T{};
             for _,res in ipairs(state.ActionResources) do
-                state.Combos.Action:append(res.Name[1]);
+                state.Combos.Action:append(encoding:ShiftJIS_To_UTF8(res.Name[1]));
             end
         end
         
@@ -959,13 +966,14 @@ function exposed:Show(macroState, macroButton)
                 local prev = state.ActionResources[index - 1];
                 local next = state.ActionResources[index + 1];
         
+                local name = encoding:ShiftJIS_To_UTF8(res.Name[1]);
                 --Show item id if multiple matching items..
-                if (prev) and (prev.Name[1] == res.Name[1]) then
-                    state.Combos.Action:append(string.format('%s[%u]', res.Name[1], res.Id));            
-                elseif (next) and (next.Name[1] == res.Name[1]) then
-                    state.Combos.Action:append(string.format('%s[%u]', res.Name[1], res.Id));
+                if (prev) and (prev.Name[1] == name) then
+                    state.Combos.Action:append(string.format('%s[%u]', name, res.Id));            
+                elseif (next) and (next.Name[1] == name) then
+                    state.Combos.Action:append(string.format('%s[%u]', name, res.Id));
                 else
-                    state.Combos.Action:append(res.Name[1]);
+                    state.Combos.Action:append(name);
                 end
             end
         end
