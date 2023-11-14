@@ -193,13 +193,13 @@ ashita.events.register('packet_out', 'player_tracker_handleoutgoingpacket', func
     if (e.id == 0x15) and (os.clock() > playerData.JobPointInit.Timer) and (AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel() == 99) then
         if (playerData.JobPointInit.Totals == false) then
             local packet = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            AshitaCore:GetPacketManager():AddOutgoingPacket(0x61, packet);            
-            print(chat.header(addon.name) .. chat.message('Sending main menu packet to initialize job point totals.'));
+            AshitaCore:GetPacketManager():AddOutgoingPacket(0x61, packet);        
+            Message('Sending main menu packet to initialize job point totals.');
         end
         if (playerData.JobPointInit.Categories == false) then
             local packet = { 0x00, 0x00, 0x00, 0x00 };
             AshitaCore:GetPacketManager():AddOutgoingPacket(0xC0, packet);
-            print(chat.header(addon.name) .. chat.message('Sending job point menu packet to initialize job point categories.'));
+            Message('Sending job point menu packet to initialize job point categories.');
         end
         playerData.JobPointInit.Timer = os.clock() + 15;
     end

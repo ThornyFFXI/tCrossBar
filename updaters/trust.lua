@@ -1,3 +1,4 @@
+local player = require('state.player');
 local Updater = {};
 
 local function ItemCost(updater, items)
@@ -91,7 +92,7 @@ end
 function Updater:Tick()
     --RecastReady will hold number of charges for charged abilities.
     local recastReady, recastDisplay  = GetSpellRecast(self.Resource);
-    local spellKnown                  = gPlayer:HasSpell(self.Resource)
+    local spellKnown                  = player:HasSpell(self.Resource)
     local spellCostDisplay, costMet   = self:CostFunction();    
 
     self.State.Available = spellKnown;

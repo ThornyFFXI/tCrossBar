@@ -1,6 +1,5 @@
 local header = { 1.0, 0.75, 0.55, 1.0 };
 local imgui = require('imgui');
-local lastPositionX, lastPositionY;
 local scaling = require('scaling');
 local state = {
     IsOpen = { false }
