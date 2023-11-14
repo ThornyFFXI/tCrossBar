@@ -129,10 +129,9 @@ end
 Setup.Ability = function(skipUpdate)
     state.ActionResources = T{};
     local resMgr = AshitaCore:GetResourceManager();
-    local playMgr = AshitaCore:GetMemoryManager():GetPlayer();
     for i = 0x200,0x600 do
         local res = resMgr:GetAbilityById(i);
-        if (res) and (playMgr:HasAbility(res.Id)) then
+        if (res) and (player:KnowsAbility(res.Id)) then
             state.ActionResources:append(res);
         end
     end
@@ -229,15 +228,15 @@ end
 Setup.Spell = function(skipUpdate)
     state.ActionResources = T{};
     local resMgr = AshitaCore:GetResourceManager();
-    local playMgr = AshitaCore:GetMemoryManager():GetPlayer();
-    local mainJob = playMgr:GetMainJob();
-    local mainJobLevel = playMgr:GetMainJobLevel();
-    local subJob = playMgr:GetSubJob();
-    local subJobLevel = playMgr:GetSubJobLevel();
+    local jobData = player:GetJobData();
+    local mainJob = jobData.MainJob;
+    local mainJobLevel = jobData.MainJobLevel;
+    local subJob = jobData.SubJob;
+    local subJobLevel = jobData.SubJobLevel;
 
     for i = 1,0x400 do
         local res = resMgr:GetSpellById(i);
-        if (res) and (playMgr:HasSpell(res.Index)) then
+        if (res) and (player:HasSpell(res)) then
             local levelRequired = res.LevelRequired;
             --Maybe not best workaround, but trust are all usable at WAR1.
             if (levelRequired[2] ~= 1) then
@@ -282,15 +281,15 @@ end
 Setup.Trust = function(skipUpdate)
     state.ActionResources = T{};
     local resMgr = AshitaCore:GetResourceManager();
-    local playMgr = AshitaCore:GetMemoryManager():GetPlayer();
-    local mainJob = playMgr:GetMainJob();
-    local mainJobLevel = playMgr:GetMainJobLevel();
-    local subJob = playMgr:GetSubJob();
-    local subJobLevel = playMgr:GetSubJobLevel();
+    local jobData = player:GetJobData();
+    local mainJob = jobData.MainJob;
+    local mainJobLevel = jobData.MainJobLevel;
+    local subJob = jobData.SubJob;
+    local subJobLevel = jobData.SubJobLevel;
 
     for i = 1,0x400 do
         local res = resMgr:GetSpellById(i);
-        if (res) and (playMgr:HasSpell(res.Index)) then
+        if (res) and (player:HasSpell(res)) then
             local levelRequired = res.LevelRequired;
 
             --Maybe not best workaround, but trust are all usable at WAR1.
@@ -336,10 +335,9 @@ end
 Setup.Weaponskill = function(skipUpdate)
     state.ActionResources = T{};
     local resMgr = AshitaCore:GetResourceManager();
-    local playMgr = AshitaCore:GetMemoryManager():GetPlayer();
     for i = 1,0x200 do
         local res = resMgr:GetAbilityById(i);
-        if (res) and (playMgr:HasAbility(res.Id)) then
+        if (res) and (player:KnowsAbility(res.Id)) then
             state.ActionResources:append(res);
         end
     end

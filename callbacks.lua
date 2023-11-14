@@ -67,6 +67,7 @@ local function ShouldHide()
 end
 
 ashita.events.register('d3d_present', 'd3d_present_cb', function ()
+    player:UpdateBLUSpells();
     gController:Tick();    
     gConfigGUI:Render();
     gBindingGUI:Render();

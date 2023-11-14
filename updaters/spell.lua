@@ -225,7 +225,7 @@ local function CheckUnbridled(updater)
 end
 
 local function GetSpellAvailableGeneric(updater)
-    if not player:KnowsSpell(updater.Resource.Index) then
+    if not player:HasSpell(updater.Resource) then
         return false, false;
     end
 
@@ -273,7 +273,7 @@ local function JobPointCheck(updater, jobData)
 end
 
 local function GetSpellAvailable(updater)
-    if not player:KnowsSpell(updater.Resource.Index) then
+    if not player:HasSpell(updater.Resource) then
         return false, false;
     end
 

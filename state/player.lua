@@ -60,6 +60,29 @@ if playerIndex ~= 0 then
     end
 end
 
+
+local knownSpells = T{};
+local unbridledSpells = T{ 736, 737, 738, 739, 740, 741, 742, 743, 744, 745, 746, 747, 748, 749, 750, 751, 752, 753 };
+local bluOffset = ashita.memory.read_uint32(ashita.memory.find('FFXiMain.dll', 0, 'C1E1032BC8B0018D????????????B9????????F3A55F5E5B', 10, 0));
+local function UpdateBLUSpells()
+    knownSpells = T{};
+    local ptr = ashita.memory.read_uint32(AshitaCore:GetPointerManager():Get('inventory'));
+    if (ptr == 0) then
+        return T{ };
+    end
+    ptr = ashita.memory.read_uint32(ptr);
+    if (ptr == 0) then
+        return T{ };
+    end
+    local spells = T(ashita.memory.read_array((ptr + bluOffset) + ((playerData.Job.MainJob == 16) and 0x04 or 0xA0), 0x14));
+    for _,entry in pairs(spells) do
+        local spell = AshitaCore:GetResourceManager():GetSpellById(entry + 512);
+        if (spell ~= nil) then
+            knownSpells:append(spell.Index);
+        end
+    end
+end
+
 ashita.events.register('packet_in', 'player_tracker_handleincomingpacket', function (e)
     if (e.id == 0x00A) then
         local id = struct.unpack('L', e.data, 0x04 + 1);
@@ -182,9 +205,9 @@ ashita.events.register('packet_out', 'player_tracker_handleoutgoingpacket', func
     end
 end);
 
-local accessor = {};
+local exports = {};
 
-function accessor:GetMeritCount(meritId)
+function exports:GetMeritCount(meritId)
     local count = playerData.MeritCount[meritId];
     if not count then
         return 0;
@@ -193,11 +216,11 @@ function accessor:GetMeritCount(meritId)
     end
 end
 
-function accessor:GetJobData()
+function exports:GetJobData()
     return playerData.Job;
 end
 
-function accessor:GetJobPointCount(job, category)
+function exports:GetJobPointCount(job, category)
     local jobTable = playerData.JobPoints[job];
     if not jobTable then
         return 0;
@@ -216,7 +239,7 @@ function accessor:GetJobPointCount(job, category)
     end
 end
 
-function accessor:GetJobPointTotal(job)
+function exports:GetJobPointTotal(job)
     local jobTable = playerData.JobPoints[job];
     if not jobTable then
         return 0;
@@ -230,16 +253,29 @@ function accessor:GetJobPointTotal(job)
     end
 end
 
-function accessor:GetLoggedIn()
+function exports:GetLoggedIn()
     return (playerData.LoggedIn == true);
 end
 
-function accessor:KnowsAbility(index)
+function exports:KnowsAbility(index)
     return (playerData.Abilities[index] == true);
 end
 
-function accessor:KnowsSpell(index)
-    return (playerData.Spells[index] == true);
+function exports:HasSpell(spell)
+    if (spell.Skill == 43) then
+        if (not unbridledSpells:contains(spell.Index)) then
+            return knownSpells:contains(spell.Index);
+        end
+    end
+    return AshitaCore:GetMemoryManager():GetPlayer():HasSpell(spell.Index);
 end
 
-return accessor;
+function exports:KnowsSpell(spell)
+    return (playerData.Spells[spell.Index] == true);
+end
+
+function exports:UpdateBLUSpells()
+    UpdateBLUSpells();
+end
+
+return exports;
