@@ -26,7 +26,7 @@ function DoubleDisplay:Initialize(layout)
     self.Layout = layout;
     self.Elements = T{};
 
-    local position = gSettings.DoublePosition[gSettings.DoubleLayout];
+    local position = gSettings.DoublePosition;
     for group = 0,1 do
         for macro = 1,8 do
             local index = (group * 8) + macro;
@@ -69,7 +69,7 @@ function DoubleDisplay:Render(macroState)
         return;
     end
 
-    local pos = gSettings.DoublePosition[gSettings.DoubleLayout];
+    local pos = gSettings.DoublePosition;
     local sprite = self.Sprite;
     sprite:Begin();
 
@@ -88,7 +88,30 @@ function DoubleDisplay:Render(macroState)
         element:RenderText(sprite);
     end
 
+    if (self.AllowDrag) then
+        local component = self.Layout.Textures[self.Layout.DragHandle.Texture];
+        vec_position.x = pos[1] + self.Layout.DragHandle.OffsetX;
+        vec_position.y = pos[2] + self.Layout.DragHandle.OffsetY;
+        sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+    end
+
     sprite:End();
+end
+
+local dragPosition = { 0, 0 };
+local dragActive = false;
+function DoubleDisplay:DragTest(e)
+    local handle = self.Layout.DragHandle;
+    local pos = gSettings.DoublePosition;
+    local minX = pos[1] + handle.OffsetX;
+    local maxX = minX + handle.Width;
+    if (e.x < minX) or (e.x > maxX) then
+        return false;
+    end
+
+    local minY = pos[2] + handle.OffsetY;
+    local maxY = minY + handle.Height;
+    return (e.y >= minY) and (e.y <= maxY);
 end
 
 function DoubleDisplay:HandleMouse(e)
@@ -96,9 +119,25 @@ function DoubleDisplay:HandleMouse(e)
         return;
     end
 
-    local macroState = gController:GetMacroState();
-    if (macroState > 2) then
-        return;
+    if (self.AllowDrag) then
+        if dragActive then
+            local pos = gSettings.DoublePosition;
+            pos[1] = pos[1] + (e.x - dragPosition[1]);
+            pos[2] = pos[2] + (e.y - dragPosition[2]);
+            dragPosition[1] = e.x;
+            dragPosition[2] = e.y;
+            self:UpdatePosition();
+            if (e.message == 514) then
+                dragActive = false;
+                settings.save();
+            end
+        elseif (e.message == 513) and self:DragTest(e) then
+            dragActive = true;
+            dragPosition[1] = e.x;
+            dragPosition[2] = e.y;
+            e.blocked = true;
+            return;
+        end
     end
 
     --Direct back to single display for activation..
@@ -120,7 +159,7 @@ function DoubleDisplay:HitTest(x, y)
         return;
     end
 
-    local pos = gSettings.DoublePosition[gSettings.DoubleLayout];
+    local pos = gSettings.DoublePosition;
     if (x < pos[1]) or (y < pos[2]) then
         return false;
     end
@@ -159,7 +198,7 @@ function DoubleDisplay:UpdatePosition()
         return;
     end
 
-    local position = gSettings.DoublePosition[gSettings.DoubleLayout];
+    local position = gSettings.DoublePosition;
 
     for _,element in ipairs(self.Elements) do
         element:SetPosition(position);

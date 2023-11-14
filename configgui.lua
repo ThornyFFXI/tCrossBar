@@ -3,8 +3,6 @@ local imgui = require('imgui');
 local lastPositionX, lastPositionY;
 local scaling = require('scaling');
 local state = {
-    DragMode = 'Disabled',
-    DragTarget = '',
     IsOpen = { false }
 };
 local validControls = T{
@@ -128,41 +126,6 @@ end
 
 local exposed = {};
 
-function exposed:HandleMouse(e)
-    if (state.IsOpen[1] == false) or (state.DragMode == 'Disabled') then
-        return false;
-    end
-    
-    if state.DragMode == 'Active' then
-        local pos = state.DragBuffer;
-        pos[1] = pos[1] + (e.x - lastPositionX);
-        pos[2] = pos[2] + (e.y - lastPositionY);
-        state.DragTarget:UpdatePosition();
-        settings.save();
-        lastPositionX = e.x;
-        lastPositionY = e.y;
-        if (e.message == 514) then
-            state.DragMode = 'Disabled';
-            e.blocked = true;
-        end
-        return true;
-    end
-
-    if (state.DragMode == 'Pending') then
-        if e.message == 513 then
-            if state.DragTarget:HitTest(e.x, e.y) then
-                state.DragMode = 'Active';
-                lastPositionX = e.x;
-                lastPositionY = e.y;
-                e.blocked = true;
-            end
-        end
-        return true;
-    end
-
-    return false;
-end
-
 function exposed:Render()
     if (state.IsOpen[1]) then
         if (imgui.Begin(string.format('%s v%s Configuration', addon.name, addon.version), state.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
@@ -180,35 +143,40 @@ function exposed:Render()
                         imgui.EndCombo();
                     end
                     imgui.SliderFloat('##SingleScale', state.SingleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
-                    if (state.DragMode == 'Disabled') then
-                        if (imgui.Button('Move##MoveSingle')) then
-                            state.DragBuffer = gSettings.SinglePosition[gSettings.SingleLayout];
-                            state.DragMode = 'Pending';
-                            state.DragTarget = gSingleDisplay;
+                    if (gSingleDisplay.Valid) then
+                        local button = string.format('%s##MoveToggleSingle', (state.DragTarget == gSingleDisplay) and 'End Drag' or 'Allow Drag');
+                        if (imgui.Button(button)) then
+                            if (state.DragTarget == gSingleDisplay) then
+                                state.DragTarget.AllowDrag = false;
+                                state.DragTarget = nil;
+                            else
+                                if (state.DragTarget ~= nil) then
+                                    state.DragTarget.AllowDrag = false;
+                                end
+                                state.DragTarget = gSingleDisplay;
+                                state.DragTarget.AllowDrag = true;
+                            end
                         end
                         imgui.ShowHelp('Allows you to drag the single display.', true);
                         imgui.SameLine();
+                        if (imgui.Button('Reset##ResetSingle')) then
+                            gSettings.SinglePosition = GetDefaultPosition(gSingleDisplay.Layout);
+                            gSingleDisplay:UpdatePosition();
+                            settings.save();
+                        end
+                        imgui.ShowHelp('Resets single display to default position.', true);
+                        imgui.SameLine();
                     end
-                    if (imgui.Button('Reset##ResetSingle')) then
-                        gSettings.SinglePosition[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
-                        gSingleDisplay:UpdatePosition();
-                        settings.save();
-                    end
-                    imgui.ShowHelp('Resets single display to default position.', true);
-                    imgui.SameLine();
                     if (imgui.Button('Apply##ApplySingle')) then
                         local layout = state.Layouts[state.SingleLayout];
                         if (layout == nil) then
                             Error('You must select a valid layout to apply it.');
                         else
                             gSettings.SingleLayout = layout;
-                            local updatePosition = (gSettings.SingleScale ~= state.SingleScale[1]);
                             gSettings.SingleScale = state.SingleScale[1];
                             gInitializer:ApplyLayout();
-                            if updatePosition then
-                                gSettings.SinglePosition[gSettings.SingleLayout] = GetDefaultPosition(gSingleDisplay.Layout);
-                                gSingleDisplay:UpdatePosition();
-                            end
+                            gSettings.SinglePosition = GetDefaultPosition(gSingleDisplay.Layout);
+                            gSingleDisplay:UpdatePosition();
                             gBindings:Update();
                             settings.save();
                         end
@@ -225,35 +193,40 @@ function exposed:Render()
                         imgui.EndCombo();
                     end
                     imgui.SliderFloat('##DoubleScale', state.DoubleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
-                    if (state.DragMode == 'Disabled') then
-                        if (imgui.Button('Move##MoveDouble')) then
-                            state.DragBuffer = gSettings.DoublePosition[gSettings.DoubleLayout];
-                            state.DragMode = 'Pending';
-                            state.DragTarget = gDoubleDisplay;
+                    if (gDoubleDisplay.Valid) then
+                        local button = string.format('%s##MoveToggleDouble', (state.DragTarget == gDoubleDisplay) and 'End Drag' or 'Allow Drag');
+                        if (imgui.Button(button)) then
+                            if (state.DragTarget == gDoubleDisplay) then
+                                state.DragTarget.AllowDrag = false;
+                                state.DragTarget = nil;
+                            else
+                                if (state.DragTarget ~= nil) then
+                                    state.DragTarget.AllowDrag = false;
+                                end
+                                state.DragTarget = gDoubleDisplay;
+                                state.DragTarget.AllowDrag = true;
+                            end
                         end
-                        imgui.ShowHelp('Allows you to drag the double display.', true);
+                        imgui.ShowHelp('Allows you to drag the single display.', true);
+                        imgui.SameLine();
+                        if (imgui.Button('Reset##ResetDouble')) then
+                            gSettings.DoublePosition = GetDefaultPosition(gDoubleDisplay.Layout);
+                            gDoubleDisplay:UpdatePosition();
+                            settings.save();
+                        end
+                        imgui.ShowHelp('Resets single display to default position.', true);
                         imgui.SameLine();
                     end
-                    if (imgui.Button('Reset##ResetDouble')) then
-                        gSettings.DoublePosition[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
-                        gDoubleDisplay:UpdatePosition(); 
-                        settings.save();
-                    end
-                    imgui.ShowHelp('Resets double display to default position.', true);
-                    imgui.SameLine();
                     if (imgui.Button('Apply##ApplyDouble')) then
                         local layout = state.Layouts[state.DoubleLayout];
                         if (layout == nil) then
                             Error('You must select a valid layout to apply it.');
                         else
                             gSettings.DoubleLayout = layout;
-                            local updatePosition = (gSettings.DoubleScale ~= state.DoubleScale[1]);
                             gSettings.DoubleScale = state.DoubleScale[1];
                             gInitializer:ApplyLayout();
-                            if updatePosition then
-                                gSettings.DoublePosition[gSettings.DoubleLayout] = GetDefaultPosition(gDoubleDisplay.Layout);
-                                gDoubleDisplay:UpdatePosition();
-                            end
+                            gSettings.DoublePosition = GetDefaultPosition(gDoubleDisplay.Layout);
+                            gDoubleDisplay:UpdatePosition();
                             gBindings:Update();
                             settings.save();
                         end
@@ -391,10 +364,14 @@ function exposed:Render()
         end
     end
 
-    if state.IsOpen[1] and (state.DragMode ~= 'Disabled') then
+    if state.IsOpen[1] then
         self.ForceDisplay = state.DragTarget;
     else
         self.ForceDisplay = nil;
+        if (state.DragTarget ~= nil) then
+            state.DragTarget.AllowDrag = false;
+            state.DragTarget = nil;
+        end
     end
 end
 
@@ -403,7 +380,7 @@ function exposed:Show()
     GetLayouts();
     state.ForceTab = true;
     state.IsOpen = { true };
-    state.DragMode = 'Disabled';
+    state.DragTarget = nil;
 end
 
 return exposed;

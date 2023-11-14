@@ -26,9 +26,9 @@ end
 --Initialize settings..
 local defaultSettings = T{
     --Layouts tab..
-    SingleLayout = 'classicsingle',
+    SingleLayout = 'classic',
     SingleScale = 1.0,
-    DoubleLayout = 'classicdouble',
+    DoubleLayout = 'classic',
     DoubleScale = 1.0,
     TriggerDuration = 0.25,
     ShowEmpty = true,
@@ -59,15 +59,29 @@ local defaultSettings = T{
     Controller = 'dualsense',
     BindMenuTimer = 1,
     TapTimer = 0.4,
-
-    --No Tab..
-    SinglePosition = T{},
-    DoublePosition = T{},
 };
 gSettings = settings.load(defaultSettings);
+if (gSettings.Version ~= addon.version) then
+    if (gSettings.Version == nil) or (gSettings.Version < 2.0) then
+        for key,val in pairs(gSettings) do
+            local newVal = defaultSettings[key];
+            if newVal then
+                gSettings[key] = newVal;
+            else
+                gSettings[key] = nil;
+            end
+        end
+        Message('Settings from a prior incompatible version detected.  Updating settings.')
+    end
+    gSettings.Version = addon.version;
+    settings.save();
+end
 
---Creates textures, assigns 
 local function PrepareLayout(layout, scale)
+    local tx = layout.Textures[layout.DragHandle.Texture]
+    layout.DragHandle.Width = tx.Width;
+    layout.DragHandle.Height = tx.Height;
+
     for _,singleTable in ipairs(T{layout, layout.FixedObjects, layout.Elements, layout.Textures}) do
         for _,tableEntry in pairs(singleTable) do
             if (type(tableEntry) == 'table') then
@@ -143,9 +157,9 @@ function Initializer:ApplyLayout()
     local singleLayout = LoadFile_s(GetResourcePath('layouts/' .. gSettings.SingleLayout));
     if singleLayout then
         PrepareLayout(singleLayout.Single, gSettings.SingleScale);
-        local position = gSettings.SinglePosition[gSettings.SingleLayout];
+        local position = gSettings.SinglePosition;
         if position == nil then
-            gSettings.SinglePosition[gSettings.SingleLayout] = GetDefaultPosition(singleLayout.Single);
+            gSettings.SinglePosition = GetDefaultPosition(singleLayout.Single);
             settings.save();
         end
         gSingleDisplay:Initialize(singleLayout.Single);
@@ -156,9 +170,9 @@ function Initializer:ApplyLayout()
     local doubleLayout = LoadFile_s(GetResourcePath('layouts/' .. gSettings.DoubleLayout));
     if doubleLayout then
         PrepareLayout(doubleLayout.Double, gSettings.DoubleScale);
-        local position = gSettings.DoublePosition[gSettings.DoubleLayout];
+        local position = gSettings.DoublePosition;
         if position == nil then
-            gSettings.DoublePosition[gSettings.DoubleLayout] = GetDefaultPosition(doubleLayout.Double);
+            gSettings.DoublePosition = GetDefaultPosition(doubleLayout.Double);
             settings.save();
         end
         gDoubleDisplay:Initialize(doubleLayout.Double);

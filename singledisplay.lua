@@ -26,7 +26,7 @@ function SingleDisplay:Initialize(layout)
     self.Layout = layout;
     self.ElementGroups = T{};
 
-    local position = gSettings.SinglePosition[gSettings.SingleLayout];
+    local position = gSettings.SinglePosition;
 
     for group = 1,6 do
         self.ElementGroups[group] = T{};
@@ -83,8 +83,9 @@ function SingleDisplay:Render(macroState)
     if (self.Valid == false) or (macroState == 0) then
         return;
     end
+    self.LastRenderState = macroState;
 
-    local pos = gSettings.SinglePosition[gSettings.SingleLayout];
+    local pos = gSettings.SinglePosition;
     local sprite = self.Sprite;
     sprite:Begin();
 
@@ -104,7 +105,31 @@ function SingleDisplay:Render(macroState)
             element:RenderText(sprite);
         end
     end
+    
+    if (self.AllowDrag) then
+        local component = self.Layout.Textures[self.Layout.DragHandle.Texture];
+        vec_position.x = pos[1] + self.Layout.DragHandle.OffsetX;
+        vec_position.y = pos[2] + self.Layout.DragHandle.OffsetY;
+        sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+    end
+
     sprite:End();
+end
+
+local dragPosition = { 0, 0 };
+local dragActive = false;
+function SingleDisplay:DragTest(e)
+    local handle = self.Layout.DragHandle;
+    local pos = gSettings.SinglePosition;
+    local minX = pos[1] + handle.OffsetX;
+    local maxX = minX + handle.Width;
+    if (e.x < minX) or (e.x > maxX) then
+        return false;
+    end
+
+    local minY = pos[2] + handle.OffsetY;
+    local maxY = minY + handle.Height;
+    return (e.y >= minY) and (e.y <= maxY);
 end
 
 function SingleDisplay:HandleMouse(e)
@@ -112,12 +137,32 @@ function SingleDisplay:HandleMouse(e)
         return;
     end
 
+    if (self.AllowDrag) then
+        if dragActive then
+            local pos = gSettings.SinglePosition;
+            pos[1] = pos[1] + (e.x - dragPosition[1]);
+            pos[2] = pos[2] + (e.y - dragPosition[2]);
+            dragPosition[1] = e.x;
+            dragPosition[2] = e.y;
+            self:UpdatePosition();
+            if (e.message == 514) then
+                dragActive = false;
+                settings.save();
+            end
+        elseif (e.message == 513) and self:DragTest(e) then
+            dragActive = true;
+            dragPosition[1] = e.x;
+            dragPosition[2] = e.y;
+            e.blocked = true;
+            return;
+        end
+    end
+
     if (e.message == 513) then
         local hit, element = self:HitTest(e.x, e.y);
         if element ~= nil then
-            local macroState = gController:GetMacroState();
-            local group = self.ElementGroups[macroState];
-            if group then
+            local group = self.ElementGroups[self.LastRenderState];
+            if group ~= nil then
                 element = group[element];
                 if element then
                     element:Activate();
@@ -133,7 +178,7 @@ function SingleDisplay:HitTest(x, y)
         return;
     end
 
-    local pos = gSettings.SinglePosition[gSettings.SingleLayout];
+    local pos = gSettings.SinglePosition;
     if (x < pos[1]) or (y < pos[2]) then
         return false;
     end
@@ -176,7 +221,7 @@ function SingleDisplay:UpdatePosition()
         return;
     end
     
-    local position = gSettings.SinglePosition[gSettings.SingleLayout];
+    local position = gSettings.SinglePosition;
 
     for _,group in ipairs(self.ElementGroups) do
         for _,element in ipairs(group) do

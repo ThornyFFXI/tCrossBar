@@ -74,11 +74,13 @@ ashita.events.register('d3d_present', 'd3d_present_cb', function ()
     renderTarget = nil;
     if (gConfigGUI.ForceDisplay) then
         gConfigGUI.ForceDisplay:Render(1);
+        renderTarget = gConfigGUI.ForceDisplay;
         return;
     end
 
     if (gBindingGUI.ForceDisplay) then
         gBindingGUI.ForceDisplay:Render(gBindingGUI.ForceState);
+        renderTarget = gBindingGUI.ForceDisplay;
         return;
     end
 
@@ -98,17 +100,25 @@ ashita.events.register('d3d_present', 'd3d_present_cb', function ()
         end
     end
 
-    if renderTarget then
-        renderTarget:Render(macroState);
-    end
+    renderTarget:Render(macroState);
 end);
 
+local mouseDown;
 ashita.events.register('mouse', 'mouse_cb', function (e)
-    if gConfigGUI:HandleMouse(e) then
-        return;
+    if (renderTarget ~= nil) then
+        renderTarget:HandleMouse(e);
     end
 
-    if (renderTarget ~= nil) and (gSettings.ClickToActivate) then
-        renderTarget:HandleMouse(e);
+    if (e.message == 513) then
+        if (e.blocked == true) then
+            mouseDown = true;
+        end
+    end
+
+    if (e.message == 514) then
+        if mouseDown then
+            e.blocked = true;
+            mouseDown = false;
+        end
     end
 end);
