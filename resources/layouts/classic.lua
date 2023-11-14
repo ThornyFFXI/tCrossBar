@@ -142,12 +142,12 @@ return {
             T{
                 OffsetX = 60,
                 OffsetY = 57,
-                Texture = 'Buttons',
+                Texture = 'Dpad',
             },
             T{
                 OffsetX = 234,
                 OffsetY = 57,
-                Texture = 'Dpad',
+                Texture = 'Buttons',
             },
         },
 
@@ -326,22 +326,22 @@ return {
             T{
                 OffsetX = 60,
                 OffsetY = 57,
-                Texture = 'Buttons',
+                Texture = 'Dpad',
             },
             T{
                 OffsetX = 234,
                 OffsetY = 57,
-                Texture = 'Dpad',
+                Texture = 'Buttons',
             },
             T{
                 OffsetX = 448,
                 OffsetY = 57,
-                Texture = 'Buttons',
+                Texture = 'Dpad',
             },
             T{
                 OffsetX = 622,
                 OffsetY = 57,
-                Texture = 'Dpad',
+                Texture = 'Buttons',
             },
         },
     

@@ -120,24 +120,9 @@ local function UpdateMacroImage()
     if (state.MacroImage == nil) then
         return;
     end
-
-    if (string.sub(state.MacroImage[1], 1, 5) == 'ITEM:') then
-        local item = AshitaCore:GetResourceManager():GetItemById(tonumber(string.sub(state.MacroImage[1], 6)));
-        if (item ~= nil) then    
-            local dx_texture_ptr = ffi.new('IDirect3DTexture8*[1]');
-            if (ffi.C.D3DXCreateTextureFromFileInMemoryEx(d3d8_device, item.Bitmap, item.ImageSize, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0, ffi.C.D3DFMT_A8R8G8B8, ffi.C.D3DPOOL_MANAGED, ffi.C.D3DX_DEFAULT, ffi.C.D3DX_DEFAULT, 0xFF000000, nil, nil, dx_texture_ptr) == ffi.C.S_OK) then
-                state.Texture = d3d8.gc_safe_release(ffi.cast('IDirect3DTexture8*', dx_texture_ptr[0]));
-            end
-        end
-        return;
-    end
-
-    local path = GetImagePath(state.MacroImage[1]);
-    if (path ~= nil) then
-        local dx_texture_ptr = ffi.new('IDirect3DTexture8*[1]');
-        if (ffi.C.D3DXCreateTextureFromFileA(d3d8_device, path, dx_texture_ptr) == ffi.C.S_OK) then
-            state.Texture = d3d8.gc_safe_release(ffi.cast('IDirect3DTexture8*', dx_texture_ptr[0]));
-        end
+    local tx = gTextureCache:GetTexture(state.MacroImage[1]);
+    if tx then
+        state.Texture = tx.Texture;
     end
 end
 
@@ -747,7 +732,7 @@ function exposed:Render()
                     if (state.Combos.Type[state.Indices.Type] ~= 'Empty') then
                         imgui.InputText('##MacroImage', state.MacroImage, 256);
                         imgui.SameLine();
-                        if (imgui.Button('Update', { 60, 0 })) then
+                        if (imgui.Button('Preview', { 60, 0 })) then
                             UpdateMacroImage();
                         end
                     end
