@@ -63,7 +63,7 @@ local defaultSettings = T{
 };
 gSettings = settings.load(defaultSettings);
 if (gSettings.Version ~= addon.version) then
-    if (gSettings.Version == nil) or (gSettings.Version < 2.0) then
+    if (type(gSettings.Version) ~= 'number') or (gSettings.Version < 2.0) then
         for key,val in pairs(gSettings) do
             local newVal = defaultSettings[key];
             if newVal then
@@ -74,7 +74,7 @@ if (gSettings.Version ~= addon.version) then
         end
         Message('Settings from a prior incompatible version detected.  Updating settings.')
     end
-    gSettings.Version = addon.version;
+    gSettings.Version = tonumber(addon.version);
     settings.save();
 end
 
