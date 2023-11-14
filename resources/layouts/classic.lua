@@ -39,7 +39,7 @@ return {
             Darkness      = 'skillchains/Darkness.png',
             Buttons       = { Path='misc/buttons.png', Width=40, Height=40 },
             Dpad          = { Path='misc/dpad.png', Width=40, Height=40 },
-            DragHandle    = { Path='misc/drag.png', Width=25, Height=25 },
+            DragHandle    = { Path='misc/drag.png', Width=26, Height=26 },
         },
 
         --Transparency to be used when bound macro's action is not known.  [0-255]
@@ -47,6 +47,14 @@ return {
         
         --Opacity of the overlay shown when a macro is activated.  [0-255]
         TriggerOpacity = 128,
+        
+        --Icon to be displayed when draggability is enabled.
+        --Must have a valid texture with specified width/height.
+        DragHandle = {
+            OffsetX = 0,
+            OffsetY = 0,
+            Texture = 'DragHandle',
+        },
 
         --The border of each macro element.  Offsets are relative to the macro element's placement.
         Frame = {
@@ -214,15 +222,22 @@ return {
             Darkness      = 'skillchains/Darkness.png',
             Buttons       = { Path='misc/buttons.png', Width=40, Height=40 },
             Dpad          = { Path='misc/dpad.png', Width=40, Height=40 },
-            DragHandle    = { Path='misc/drag.png', Width=25, Height=25 },
+            DragHandle    = { Path='misc/drag.png', Width=26, Height=26 },
         },
     
         --Transparency to be used when bound macro's action is not known.  [0-255]
         FadeOpacity = 128,
         
         --Opacity of the overlay shown when a macro is activated.  [0-255]
-        TriggerOpacity = 128,
-    
+        TriggerOpacity = 128,    
+        
+        --Icon to be displayed when draggability is enabled.
+        DragHandle = {
+            OffsetX = 0,
+            OffsetY = 0,
+            Texture = 'DragHandle',
+        },
+
         --The border of each macro element.  Offsets are relative to the macro element's placement.
         Frame = {
             OffsetX = 0,
