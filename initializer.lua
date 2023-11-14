@@ -42,6 +42,7 @@ local defaultSettings = T{
     ShowSkillchainIcon = true,
     ShowSkillchainAnimation = true,
     ShowTrigger = true,
+    ShowPalette = true,
 
     --Behavior tab..
     ClickToActivate = true,

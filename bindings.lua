@@ -192,6 +192,19 @@ function exposed:BindPalette(hotkey, binding)
     ApplyBindings();
 end
 
+function exposed:GetDisplayText()
+    if (bindings.ActivePalette == nil) then
+        return;
+    end
+    
+    local paletteCount = #bindings.JobBindings.Palettes;
+    if (paletteCount == 1) then
+        return bindings.ActivePalette.Name;
+    else
+        return string.format ('%s (%u/%u)', bindings.ActivePalette.Name, bindings.ActivePaletteIndex, paletteCount);
+    end
+end
+
 function exposed:PreviousPalette()
     local paletteCount = #bindings.JobBindings.Palettes;
     if (paletteCount == 1) then

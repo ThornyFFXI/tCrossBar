@@ -1,6 +1,7 @@
 local d3d8 = require('d3d8');
 local Element = require('element');
 local ffi = require('ffi');
+local gdi = require('gdifonts.include');
 
 local function GetButtonAlias(comboIndex, buttonIndex)
     local macroComboBinds = {
@@ -24,6 +25,7 @@ end
 
 function DoubleDisplay:Initialize(layout)
     self.Layout = layout;
+    self.PaletteDisplay = nil;
     self.Elements = T{};
 
     local position = gSettings.DoublePosition;
@@ -48,6 +50,10 @@ function DoubleDisplay:Initialize(layout)
     end
     
     self.Valid = (self.Sprite ~= nil);
+    local obj = gdi:create_object(self.Layout.Palette, true);
+    obj.OffsetX = self.Layout.Palette.OffsetX;
+    obj.OffsetY = self.Layout.Palette.OffsetY;
+    self.PaletteDisplay = obj;
 end
 
 function DoubleDisplay:SetActivationTimer(macroState, macroIndex)
@@ -63,6 +69,7 @@ function DoubleDisplay:SetActivationTimer(macroState, macroIndex)
 end
 
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
+local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
 function DoubleDisplay:Render(macroState)
     if (self.Valid == false) then
@@ -82,6 +89,23 @@ function DoubleDisplay:Render(macroState)
 
     for _,element in ipairs(self.Elements) do
         element:RenderIcon(sprite);
+    end
+
+    local paletteText = gBindings:GetDisplayText();
+    if (gSettings.ShowPalette) and (paletteText) then
+        local obj = self.PaletteDisplay;
+        obj:set_text(paletteText);
+        local texture, rect = obj:get_texture();
+        local posX = obj.OffsetX + pos[1];
+        if (obj.settings.font_alignment == 1) then
+            vec_position.x = posX - (rect.right / 2);
+        elseif (obj.settings.font_alignment == 2) then
+            vec_position.x = posX - rect.right;
+        else
+            vec_position.x = posX;;
+        end
+        vec_position.y = obj.OffsetY + pos[2];
+        sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
     end
     
     for _,element in ipairs(self.Elements) do

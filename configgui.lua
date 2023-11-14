@@ -267,6 +267,8 @@ function exposed:Render()
                     imgui.ShowHelp('Shows hotkey labels.');
                     CheckBox('Name', 'ShowName');
                     imgui.ShowHelp('Shows action names.');
+                    CheckBox('Palette', 'ShowPalette');
+                    imgui.ShowHelp('Shows selected palette.');
                     imgui.EndGroup();
                     imgui.EndTabItem();
                 end
