@@ -26,6 +26,8 @@ addon.desc      = 'Creates a controller scheme for activating macros, and provid
 addon.link      = 'https://ashitaxi.com/';
 
 require('common');
+local jit = require('jit');
+jit.off();
 local chat = require('chat');
 local gdi  = require('gdifonts.include');
 
