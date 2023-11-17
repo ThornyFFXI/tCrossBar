@@ -165,7 +165,7 @@ function DoubleDisplay:HandleMouse(e)
     end
 
     --Direct back to single display for activation..
-    if (e.message == 513) then
+    if (e.message == 513)  and (gSettings.ClickToActivate) then
         local hit, element = self:HitTest(e.x, e.y);
         if element ~= nil then
             if (element > 8) then

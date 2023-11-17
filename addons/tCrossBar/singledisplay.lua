@@ -158,7 +158,7 @@ function SingleDisplay:HandleMouse(e)
         end
     end
 
-    if (e.message == 513) then
+    if (e.message == 513) and (gSettings.ClickToActivate) then
         local hit, element = self:HitTest(e.x, e.y);
         if element ~= nil then
             local group = self.ElementGroups[self.LastRenderState];
