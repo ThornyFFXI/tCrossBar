@@ -2,14 +2,10 @@
 tCrossBar is an interface for binding and visualizing macros more easily.  It uses visual elements to display as much information as possible, and is highly customizable in appearance.  Many features are familiar from tHotBar, but the interface is based around controller usage.
 
 ## How To Install
-Download the release zip for the Ashita client version you are currently using.  Extract directly to your Ashita directory(the folder with ashita-cli.exe in it!).  Everything should fall into place.  If you feel you've messed that up, the required components are a plugin named 'tRenderer.dll' in your plugins folder, and a folder named 'tCrossBar' in your addons folder.  If you need to build tRenderer yourself for a different client version, or simply don't trust foreign dlls, you can access the source at:<br>
-https://github.com/ThornyFFXI/tRenderer
-
-## How To Load
-You must load the plugin tRenderer with **/load trenderer** prior to loading the addon tCrossBar with **/addon load tCrossBar**.  If you place these in your autoload file, you must ensure that both addons itself and trenderer are loaded prior to loading tCrossBar.
+Download the release zip. Extract directly to your Ashita directory(the folder with ashita-cli.exe in it!). Everything should fall into place. tRenderer is no longer a part of tCrossBar. You can just load the addon now.
 
 ## Initial Setup
-Upon initial login, you can type **/tc** to open a configuration window and configure the addon.  Initial release only includes one layout, but future releases will provide more variations.  After selecting a layout, go to the second tab and select a device mapping.  At present, the dualsense mapping should be usable for most directinput controllers, the xbox mapping should be usable for most xinput controllers, and the switchpro mapping should only be used for a switch pro controller.  I am happy to work one on one with anyone who has a controller that needs specialized mapping to expand the amount of available mappings.  Once you've selected a mapping, you can use the third tab to tweak controls if you are not happy with the defaults.  Finally, close the configuration window and you're ready to get started.
+Upon initial login, you can type **/tc** to open a configuration window and configure the addon.  You can use the scale slider to make the displays larger or smaller, but you must click apply each time you change it to preview the change.  If trying to view single display, use the 'Allow Drag' button under the 'Single Layout' header to force it visible.  After you are happy with your layouts, go to the second tab and select a device mapping.  If you are on Ashita Interface 4.15 or lower, and using an xbox controller, be sure to choose the 'xbox_legacy' layout.  If on interface 4.16 or higher, the plain xbox layout is fine.  At present, the dualsense mapping should be usable for most directinput controllers, the xbox mapping should be usable for most xinput controllers, and the switchpro mapping should only be used for a switch pro controller.  I am happy to work one on one with anyone who has a controller that needs specialized mapping to expand the amount of available mappings.  Once you've selected a mapping, you can use the third tab to tweak controls if you are not happy with the defaults.  Finally, close the configuration window and you're ready to get started.
 
 ## Making Macros
 To open the binding interface, simply hold both combo keys and both palette swap keys until a small imgui window pops up.  The default configuration for any controller will have these as L1+L2+R1+R2.  Afterward, you can press any macro combination to create a macro for it.  The macro interface itself requires mouse and keyboard for full customization, but has basic controller support.  To use it with a controller, you can navigate between Scope, Action Type, and Action with dpad up/down.  You can change any of these with dpad left/right, and holding the button down will cycle more rapidly.  Pressing your gamepad's confirm button will bind the macro, and your cancel button will return you to the binding interface to select a different macro.  The top button in your 4 button grouping swaps tabs, but controller cannot modify any settings in the appearance tab directly.
@@ -58,7 +54,7 @@ You can create this directory if it does not yet exist.  All image bindings will
 **Ashita/config/addons/tCrossBar/resources/abilities/16.png**<br>
 and you would enter the binding as:<br>
 **abilities/16.png**<br>
-You can also use the game's item resources directly, as tCrossBar will do when binding items.  To do this, simply enter the binding as **ITEM:28540** using the item id.  This can be found on FFXIAH.com or many other places.  This example would show a warp ring.
+You can also use the game's item resources directly, as tCrossBar will do when binding items.  To do this, simply enter the binding as **ITEM:28540** using the item id.  This can be found on FFXIAH.com or many other places.  This example would show a warp ring.  Status resources are supported similarly, using the notation STATUS:## with the status ID.
 
 ## Custom Layouts
 If you want to adjust the layouts, the same thing applies!  Copy the included layout from:<br>
@@ -68,4 +64,13 @@ to<br>
 prior to making changes.  Even if the original remains, layouts in config will always take priority.  Make sure to click 'refresh' in the config UI to detect new or altered layouts after editing files on disk.
 
 ## FAQ
+### My settings reset when installing 2.0+.
+This is expected. Settings, as configured through the '/tc' window, have been overhauled enough to be incompatible. You will need to configure them again. Note that bindings, your actual macros, will always remain compatible.
+
+### tCrossBar crashes with a random error after upgrading to 2.0+.
+Make sure you don't have any customized layouts from pre-2.0 in Ashita/addons/tCrossBar/resources/layouts. Layouts from prior to 2.0 are not compatible with 2.0+.
+
+### My xbox controller isn't working right after upgrading to 2.0+.
+Use the xbox_legacy controller profile until you've also upgraded to Ashita 4.16+.
+
 #### More to come as common questions arise.
