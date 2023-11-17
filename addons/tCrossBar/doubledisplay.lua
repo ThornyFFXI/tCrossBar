@@ -143,25 +143,23 @@ function DoubleDisplay:HandleMouse(e)
         return;
     end
 
-    if (self.AllowDrag) then
-        if dragActive then
-            local pos = gSettings.DoublePosition;
-            pos[1] = pos[1] + (e.x - dragPosition[1]);
-            pos[2] = pos[2] + (e.y - dragPosition[2]);
-            dragPosition[1] = e.x;
-            dragPosition[2] = e.y;
-            self:UpdatePosition();
-            if (e.message == 514) then
-                dragActive = false;
-                settings.save();
-            end
-        elseif (e.message == 513) and self:DragTest(e) then
-            dragActive = true;
-            dragPosition[1] = e.x;
-            dragPosition[2] = e.y;
-            e.blocked = true;
-            return;
+    if dragActive then
+        local pos = gSettings.DoublePosition;
+        pos[1] = pos[1] + (e.x - dragPosition[1]);
+        pos[2] = pos[2] + (e.y - dragPosition[2]);
+        dragPosition[1] = e.x;
+        dragPosition[2] = e.y;
+        self:UpdatePosition();
+        if (e.message == 514) or (not self.AllowDrag) then
+            dragActive = false;
+            settings.save();
         end
+    elseif (self.AllowDrag) and (e.message == 513) and self:DragTest(e) then
+        dragActive = true;
+        dragPosition[1] = e.x;
+        dragPosition[2] = e.y;
+        e.blocked = true;
+        return;
     end
 
     --Direct back to single display for activation..
