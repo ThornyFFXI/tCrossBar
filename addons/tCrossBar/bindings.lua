@@ -199,7 +199,7 @@ function exposed:GetDisplayText()
     
     local paletteCount = #bindings.JobBindings.Palettes;
     if (paletteCount == 1) then
-        return bindings.ActivePalette.Name;
+        return;
     else
         return string.format ('%s (%u/%u)', bindings.ActivePalette.Name, bindings.ActivePaletteIndex, paletteCount);
     end
