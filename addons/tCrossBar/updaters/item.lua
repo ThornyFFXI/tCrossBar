@@ -41,7 +41,7 @@ local function GetItemRecast(itemId)
         end
     end
 
-    return tostring(itemCount);
+    return itemCount;
 end
 
 local function GetEquipmentRecast(itemResource)
