@@ -275,7 +275,9 @@ function exports:KnowsSpell(spell)
 end
 
 function exports:UpdateBLUSpells()
-    UpdateBLUSpells();
+    if (playerData.Job ~= nil) then
+        UpdateBLUSpells();
+    end
 end
 
 return exports;
