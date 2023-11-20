@@ -54,6 +54,7 @@ function DoubleDisplay:Initialize(layout)
     obj.OffsetX = self.Layout.Palette.OffsetX;
     obj.OffsetY = self.Layout.Palette.OffsetY;
     self.PaletteDisplay = obj;
+    self:UpdateBindings(gBindings:GetFormattedBindings());
 end
 
 function DoubleDisplay:SetActivationTimer(macroState, macroIndex)

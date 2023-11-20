@@ -80,11 +80,7 @@ local function WriteJob(jobBindings)
     writer:close();
 end
 
-local function ApplyBindings()
-    if (gSingleDisplay == nil) then
-        return;
-    end
-
+local function FormatBindings()
     local output = {};
     for hotkey,binding in pairs(bindings.ActivePalette.Bindings) do
         output[hotkey] = binding;
@@ -105,8 +101,18 @@ local function ApplyBindings()
         end
     end
 
-    gSingleDisplay:UpdateBindings(output);
-    gDoubleDisplay:UpdateBindings(output);
+    return output;
+end
+
+local function ApplyBindings()
+    local bindings = FormatBindings();
+    if (gSingleDisplay) then
+        gSingleDisplay:UpdateBindings(bindings);
+    end
+
+    if (gDoubleDisplay) then
+        gDoubleDisplay:UpdateBindings(bindings);
+    end
 end
 
 local exposed = {};
@@ -190,6 +196,10 @@ function exposed:BindPalette(hotkey, binding)
     bindings.ActivePalette.Bindings[hotkey] = binding;
     WriteJob();
     ApplyBindings();
+end
+
+function exposed:GetFormattedBindings()
+    return FormatBindings();
 end
 
 function exposed:GetDisplayText()

@@ -197,8 +197,5 @@ end);
 
 Initializer:ApplyController();
 Initializer:ApplyLayout();
-if (gSingleDisplay) and (gDoubleDisplay) then
-    gBindings:Update();
-end
 
 return Initializer;

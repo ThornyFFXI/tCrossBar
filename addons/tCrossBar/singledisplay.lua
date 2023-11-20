@@ -49,6 +49,7 @@ function SingleDisplay:Initialize(layout)
     end
     
     self.Valid = (self.Sprite ~= nil);
+    self:UpdateBindings(gBindings:GetFormattedBindings());
 end
 
 function SingleDisplay:GetElementByMacro(macroState, macroIndex)
