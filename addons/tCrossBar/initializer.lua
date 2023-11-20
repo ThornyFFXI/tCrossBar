@@ -62,21 +62,25 @@ local defaultSettings = T{
     TapTimer = 0.4,
 };
 gSettings = settings.load(defaultSettings);
-if (gSettings.Version ~= addon.version) then
-    if (type(gSettings.Version) ~= 'number') or (gSettings.Version < 2.0) then
-        for key,val in pairs(gSettings) do
-            local newVal = defaultSettings[key];
-            if newVal then
-                gSettings[key] = newVal;
-            else
-                gSettings[key] = nil;
+
+local function UpdateSettings()
+    if (gSettings.Version ~= addon.version) then
+        if (type(gSettings.Version) ~= 'number') or (gSettings.Version < 2.0) then
+            for key,val in pairs(gSettings) do
+                local newVal = defaultSettings[key];
+                if newVal then
+                    gSettings[key] = newVal;
+                else
+                    gSettings[key] = nil;
+                end
             end
+            Message('Settings from a prior incompatible version detected.  Updating settings.')
         end
-        Message('Settings from a prior incompatible version detected.  Updating settings.')
+        gSettings.Version = tonumber(addon.version);
+        settings.save();
     end
-    gSettings.Version = tonumber(addon.version);
-    settings.save();
 end
+UpdateSettings();
 
 local function PrepareLayout(layout, scale)
     local tx = layout.Textures[layout.DragHandle.Texture]
@@ -186,6 +190,7 @@ end
 
 settings.register('settings', 'settings_update', function(newSettings)
     gSettings = newSettings;
+    UpdateSettings();
     Initializer:ApplyController();
     Initializer:ApplyLayout();
 end);
