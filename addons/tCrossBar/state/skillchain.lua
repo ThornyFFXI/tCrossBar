@@ -463,11 +463,14 @@ local function HandleActionPacket(actionPacket)
             local targetIndex = GetIndexFromId(target.Id);
             if (targetIndex ~= 0) then
                 for _,action in pairs(target.Actions) do
-                    local skillchain = skillchainMessageIds[action.Message];
+                    local skillchain;
+                    if (action.AdditionalEffect ~= nil) then
+                        skillchain = skillchainMessageIds[action.AdditionalEffect.Message];
+                    end
                     if skillchain == Resonation.None then
                         resonationMap[targetIndex] = nil;
                     elseif skillchain then
-                        local resonation = resonationMap[targetIndex];                        
+                        local resonation = resonationMap[targetIndex];
                         if resonation and ((os.clock() + 1) > resonation.WindowOpen) and ((os.clock() - 1) < resonation.WindowClose) then
                             resonation.Depth = resonation.Depth + 1;
                             if ((skillchain == Resonation.Light) and (resonation.Attributes:contains(Resonation.Light))) then
@@ -509,8 +512,13 @@ local function HandleActionPacket(actionPacket)
             local targetIndex = GetIndexFromId(target.Id);
             if (targetIndex ~= 0) then
                 for _,action in pairs(target.Actions) do
-                    local skillchain = skillchainMessageIds[action.Message];
-                    if skillchain then
+                    local skillchain;
+                    if (action.AdditionalEffect ~= nil) then
+                        skillchain = skillchainMessageIds[action.AdditionalEffect.Message];
+                    end
+                    if skillchain == Resonation.None then
+                        resonationMap[targetIndex] = nil;
+                    elseif skillchain then
                         local resonation = resonationMap[targetIndex];
                         if resonation and ((os.clock() + 1) > resonation.WindowOpen) and ((os.clock() - 1) < resonation.WindowClose) then
                             resonation.Depth = resonation.Depth + 1;

@@ -35,6 +35,9 @@ This will add a palette on your current job.
 **/tc palette remove [required: name]**
 This will delete a palette from your current job.  There is no way to recover bindings after doing this.
 
+**/tc palette rename [required: old name] [required: new name]**
+This will rename a palette, while preserving it's place in the order and bindings.
+
 **/tc palette list**
 This will print a list of palettes for your current job.
 

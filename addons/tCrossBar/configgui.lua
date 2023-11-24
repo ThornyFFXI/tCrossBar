@@ -266,8 +266,10 @@ function exposed:Render()
                     imgui.ShowHelp('Shows hotkey labels.');
                     CheckBox('Name', 'ShowName');
                     imgui.ShowHelp('Shows action names.');
-                    CheckBox('Palette', 'ShowPalette');
-                    imgui.ShowHelp('Shows selected palette.');
+                    CheckBox('Palette(Single)', 'ShowSinglePalette');
+                    imgui.ShowHelp('Shows selected palette on single display.');
+                    CheckBox('Palette(Double)', 'ShowPalette');
+                    imgui.ShowHelp('Shows selected palette on double display.');
                     imgui.EndGroup();
                     imgui.EndTabItem();
                 end

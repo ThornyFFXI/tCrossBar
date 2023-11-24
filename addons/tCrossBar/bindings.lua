@@ -177,7 +177,7 @@ function exposed:LoadDefaults(name, id, job)
 end
 
 --[[
-    /tb palette [add/change/remove/list/next/previous] [name]
+    /tc palette [add/change/remove/list/next/previous] [name]
 ]]--
 
 function exposed:BindGlobal(hotkey, binding)
@@ -258,7 +258,7 @@ function exposed:HandleCommand(args)
 
     if (cmd == 'add') then
         if (args[4] == nil) then
-            Error('Command Syntax: $H/tb palette add [name]$R.');
+            Error('Command Syntax: $H/tc palette add [name]$R.');
             return;
         end
         local paletteName = string.lower(args[4]);
@@ -278,16 +278,17 @@ function exposed:HandleCommand(args)
             gBindingGUI:UpdatePalette();
         end
         Message('Created palette!');
+        WriteJob();
     elseif (cmd == 'remove') then
         if (args[4] == nil) then
-            Error('Command Syntax: $H/tb palette remove [name]$R.');
+            Error('Command Syntax: $H/tc palette remove [name]$R.');
+            return;
+        end
+        if (#bindings.JobBindings.Palettes == 1) then
+            Error('Cannot remove last palette.');
             return;
         end
         local paletteName = string.lower(args[4]);
-        if (paletteName == 'base') then
-            Error('Cannot remove base palette.');
-            return;
-        end
         for index,palette in ipairs(bindings.JobBindings.Palettes) do
             if (string.lower(palette.Name) == paletteName) then
                 table.remove(bindings.JobBindings.Palettes, index);
@@ -300,10 +301,36 @@ function exposed:HandleCommand(args)
                     end
                 end
                 Message('Removed palette!');
+                WriteJob();
                 return;
             end
         end
         Error('Could not find palette to remove.');
+    elseif (cmd == 'rename') then
+        if (args[4] == nil) or (args[5] == nil) then
+            Error('Command Syntax: $H/tc palette rename [old name] [new name]$R.');
+            return;
+        end
+        local paletteName = string.lower(args[4]);
+        local newNameLower = string.lower(args[5]);
+        local targetPalette;
+        for index,palette in ipairs(bindings.JobBindings.Palettes) do
+            local lower = string.lower(palette.Name);
+            if (lower == paletteName) then
+                targetPalette = palette;
+            elseif (lower == newNameLower) then
+                Error('A palette with that name already exists.');
+                return;
+            end
+        end
+
+        if targetPalette then
+            targetPalette.Name = args[5];
+            Message('Renamed palette!');
+            WriteJob();
+            return;
+        end        
+        Error('Could not find palette to rename.');
     elseif (cmd == 'list') then
         for index,palette in ipairs(bindings.JobBindings.Palettes) do
             Message(string.format('[%u] %s%s', index, palette.Name, (bindings.ActivePaletteIndex == index) and ' - $HACTIVE$R' or ''));
@@ -314,7 +341,7 @@ function exposed:HandleCommand(args)
         self:PreviousPalette();
     elseif (cmd == 'change') then
         if (args[4] == nil) then
-            Error('Command Syntax: $H/tb palette change [name]$R.');
+            Error('Command Syntax: $H/tc palette change [name]$R.');
             return;
         end
         local paletteName = string.lower(args[4]);

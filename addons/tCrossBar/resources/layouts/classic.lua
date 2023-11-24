@@ -138,6 +138,23 @@ return {
             OffsetY = 44,
         },
 
+        --Text object to display palette name.
+        Palette = {
+            box_height = 0,
+            box_width = 0,
+            font_alignment = 1,
+            font_color = 0xFFFF0000,
+            font_family = 'Arial',
+            font_flags = 0,
+            font_height = 15,
+            gradient_color = 0xFFFC0384,
+            gradient_style = 3,
+            outline_color = 0xFF000000,
+            outline_width = 2,
+            OffsetX = 167,
+            OffsetY = 0,
+        },
+
         --Texture must be defined in textures table.  Objects are rendered in order, prior to square elements.
         FixedObjects = T{
             T{
@@ -322,7 +339,7 @@ return {
             OffsetY = 44,
         },
         
-        --Text object to display palette name.  Offsets are relative to entire panel.  Only present in double display.
+        --Text object to display palette name.  Offsets are relative to entire panel.
         Palette = {
             box_height = 0,
             box_width = 0,

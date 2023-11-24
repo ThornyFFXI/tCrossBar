@@ -1,6 +1,7 @@
 local d3d8 = require('d3d8');
 local Element = require('element');
 local ffi = require('ffi');
+local gdi = require('gdifonts.include');
 
 local function GetButtonAlias(comboIndex, buttonIndex)
     local macroComboBinds = {
@@ -49,6 +50,10 @@ function SingleDisplay:Initialize(layout)
     end
     
     self.Valid = (self.Sprite ~= nil);
+    local obj = gdi:create_object(self.Layout.Palette, true);
+    obj.OffsetX = self.Layout.Palette.OffsetX;
+    obj.OffsetY = self.Layout.Palette.OffsetY;
+    self.PaletteDisplay = obj;
     self:UpdateBindings(gBindings:GetFormattedBindings());
 end
 
@@ -79,6 +84,7 @@ function SingleDisplay:Activate(macroState, macroIndex)
 end
 
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
+local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
 function SingleDisplay:Render(macroState)
     if (self.Valid == false) or (macroState == 0) then
@@ -104,6 +110,25 @@ function SingleDisplay:Render(macroState)
         end
         for _,element in ipairs(group) do
             element:RenderText(sprite);
+        end
+    end
+    
+    local paletteText = gBindings:GetDisplayText();
+    if (gSettings.ShowSinglePalette) and (paletteText) then
+        local obj = self.PaletteDisplay;
+        if obj then
+            obj:set_text(paletteText);
+            local texture, rect = obj:get_texture();
+            local posX = obj.OffsetX + pos[1];
+            if (obj.settings.font_alignment == 1) then
+                vec_position.x = posX - (rect.right / 2);
+            elseif (obj.settings.font_alignment == 2) then
+                vec_position.x = posX - rect.right;
+            else
+                vec_position.x = posX;;
+            end
+            vec_position.y = obj.OffsetY + pos[2];
+            sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
         end
     end
     
