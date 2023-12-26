@@ -80,6 +80,11 @@ local function HandleButton(buttonName, buttonState)
     return button.Blocking;
 end
 
+local offset = 32;
+if (ashita.interface_version ~= nil) then
+    offset = 16;
+end
+
 local layout = {
     --Enable the input method used for this controller only.
     DirectInput = false,
@@ -120,7 +125,7 @@ local layout = {
         'RStick_DownLeft',
         'RStick_Left',
         'RStick_UpLeft',
-    };
+    },
 
     --Default controls until user configures bindings.  Must exact match strings in ButtonMap.    
     Defaults = {
@@ -143,8 +148,7 @@ local layout = {
         BindingConfirm = 'A',
         BindingCancel = 'B',
         BindingTab = 'Y',
-    };
-
+    },
 
     --[[
         Key is the value used in event callback as 'button'.
@@ -251,42 +255,42 @@ local layout = {
         end,
 
         --L2
-        [16] = function(e)
+        [offset] = function(e)
             if HandleButton('L2', e.state > 0) then
                 e.blocked = true;
             end
         end,
         
         --R2
-        [17] = function(e)
+        [offset+1] = function(e)
             if HandleButton('R2', e.state > 0) then
                 e.blocked = true;
             end
         end,
 
         --Horizontal L-Stick Movement
-        [18] = function(e)
+        [offset+2] = function(e)
             if HandleStick('LStick', e.state, state.LStick.Vertical) then
                 e.blocked = true;
             end
         end,
         
         --Vertical L-Stick Movement
-        [19] = function(e)
+        [offset+3] = function(e)
             if HandleStick('LStick', state.LStick.Horizontal, e.state) then
                 e.blocked = true;
             end
         end,
 
         --Horizontal R-Stick Movement
-        [20] = function(e)
+        [offset+4] = function(e)
             if HandleStick('RStick', e.state, state.RStick.Vertical) then
                 e.blocked = true;
             end
         end,
         
         --Vertical R-Stick Movement
-        [21] = function(e)
+        [offset+5] = function(e)
             if HandleStick('RStick', state.RStick.Horizontal, e.state) then
                 e.blocked = true;
             end

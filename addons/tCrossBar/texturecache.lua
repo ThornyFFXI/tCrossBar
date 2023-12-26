@@ -30,7 +30,11 @@ function TextureCache:GetTexture(file)
         end
 
         local dx_texture_ptr = ffi.new('IDirect3DTexture8*[1]');
-        if (ffi.C.D3DXCreateTextureFromFileInMemoryEx(d3d8_device, item.Bitmap, item.ImageSize, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0, ffi.C.D3DFMT_A8R8G8B8, ffi.C.D3DPOOL_MANAGED, ffi.C.D3DX_DEFAULT, ffi.C.D3DX_DEFAULT, 0xFF000000, nil, nil, dx_texture_ptr) == ffi.C.S_OK) then
+        local size = -1;
+        if (ashita.interface_version == nil) then
+            size = item.ImageSize;
+        end
+        if (ffi.C.D3DXCreateTextureFromFileInMemoryEx(d3d8_device, item.Bitmap, size, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0, ffi.C.D3DFMT_A8R8G8B8, ffi.C.D3DPOOL_MANAGED, ffi.C.D3DX_DEFAULT, ffi.C.D3DX_DEFAULT, 0xFF000000, nil, nil, dx_texture_ptr) == ffi.C.S_OK) then
             local texture = d3d8.gc_safe_release(ffi.cast('IDirect3DTexture8*', dx_texture_ptr[0]));
             local result, desc = texture:GetLevelDesc(0);
             if result == 0 then
@@ -63,7 +67,11 @@ function TextureCache:GetTexture(file)
 
 
         local dx_texture_ptr = ffi.new('IDirect3DTexture8*[1]');
-        if (ffi.C.D3DXCreateTextureFromFileInMemoryEx(d3d8_device, status.Bitmap, status.ImageSize, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0, ffi.C.D3DFMT_A8R8G8B8, ffi.C.D3DPOOL_MANAGED, ffi.C.D3DX_DEFAULT, ffi.C.D3DX_DEFAULT, 0xFF000000, nil, nil, dx_texture_ptr) == ffi.C.S_OK) then
+        local size = -1;
+        if (ashita.interface_version == nil) then
+            size = status.ImageSize;
+        end
+        if (ffi.C.D3DXCreateTextureFromFileInMemoryEx(d3d8_device, status.Bitmap, size, 0xFFFFFFFF, 0xFFFFFFFF, 1, 0, ffi.C.D3DFMT_A8R8G8B8, ffi.C.D3DPOOL_MANAGED, ffi.C.D3DX_DEFAULT, ffi.C.D3DX_DEFAULT, 0xFF000000, nil, nil, dx_texture_ptr) == ffi.C.S_OK) then
             local texture = d3d8.gc_safe_release(ffi.cast('IDirect3DTexture8*', dx_texture_ptr[0]));
             local result, desc = texture:GetLevelDesc(0);
             if result == 0 then

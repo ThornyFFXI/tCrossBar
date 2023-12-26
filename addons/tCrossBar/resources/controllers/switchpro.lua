@@ -167,7 +167,7 @@ local layout = {
         'Plus',
         'Home',
         'Capture'
-    };
+    },
 
     --Default controls until user configures bindings.  Must exact match strings in ButtonMap.    
     Defaults = {
@@ -190,8 +190,7 @@ local layout = {
         BindingConfirm = 'A',
         BindingCancel = 'B',
         BindingTab = 'X',
-    };
-
+    },
 
     --[[
         Key is the directinput offset, which is the same value used in event callback as 'button'.

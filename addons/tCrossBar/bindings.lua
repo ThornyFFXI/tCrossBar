@@ -7,6 +7,7 @@ local bindings = {
 };
 bindings.ActivePalette = bindings.JobBindings.Palettes[1];
 bindings.ActivePaletteIndex = 1;
+bindings.LastPaletteIndex = 1;
 
 local function WriteBinding(writer, depth, hotkey, binding)
     local pad1 = string.rep(' ', depth);
@@ -128,6 +129,7 @@ function exposed:LoadDefaults(name, id, job)
         };
         bindings.ActivePalette = bindings.JobBindings.Palettes[1];
         bindings.ActivePaletteIndex = 1;
+        bindings.LastPaletteIndex = 1;
         ApplyBindings();
         return;
     end
@@ -173,6 +175,7 @@ function exposed:LoadDefaults(name, id, job)
 
     bindings.ActivePalette = bindings.JobBindings.Palettes[1];
     bindings.ActivePaletteIndex = 1;
+    bindings.LastPaletteIndex = 1;
     ApplyBindings();
 end
 
@@ -221,6 +224,7 @@ function exposed:PreviousPalette()
         Error('Current job only has one palette!');
         return;
     end
+    bindings.LastPaletteIndex = bindings.ActivePaletteIndex;
     bindings.ActivePaletteIndex = bindings.ActivePaletteIndex - 1;
     if (bindings.ActivePaletteIndex < 1) then
         bindings.ActivePaletteIndex = paletteCount;
@@ -238,6 +242,7 @@ function exposed:NextPalette()
         Error('Current job only has one palette!');
         return;
     end
+    bindings.LastPaletteIndex = bindings.ActivePaletteIndex;
     bindings.ActivePaletteIndex = bindings.ActivePaletteIndex + 1;
     if (bindings.ActivePaletteIndex > paletteCount) then
         bindings.ActivePaletteIndex = 1;
@@ -271,6 +276,7 @@ function exposed:HandleCommand(args)
         
         local newPalette = { Name = args[4], Bindings = T{} };
         bindings.JobBindings.Palettes:append(newPalette);
+        bindings.LastPaletteIndex = bindings.ActivePaletteIndex;
         bindings.ActivePalette = newPalette;
         bindings.ActivePaletteIndex = #bindings.JobBindings.Palettes;
         ApplyBindings();
@@ -295,6 +301,7 @@ function exposed:HandleCommand(args)
                 if (index == bindings.ActivePaletteIndex) then
                     bindings.ActivePalette = bindings.JobBindings.Palettes[1];
                     bindings.ActivePaletteIndex = 1;
+                    bindings.LastPaletteIndex = 1;
                     ApplyBindings();
                     if (gBindingGUI:GetActive()) then
                         gBindingGUI:UpdatePalette();
@@ -349,7 +356,8 @@ function exposed:HandleCommand(args)
         for index,palette in ipairs(bindings.JobBindings.Palettes) do
             if (string.lower(palette.Name) == paletteName) then
                 if (bindings.ActivePaletteIndex ~= index) then
-                    bindings.ActivePalette = palette
+                    bindings.LastPaletteIndex = bindings.ActivePaletteIndex;
+                    bindings.ActivePalette = palette;
                     bindings.ActivePaletteIndex = index;
                     ApplyBindings();
                     if (gBindingGUI:GetActive()) then
@@ -361,6 +369,24 @@ function exposed:HandleCommand(args)
         end
         
         Error('Could not find palette to change to.');
+    elseif (cmd == 'last') then        
+        local last = bindings.LastPaletteIndex;
+        local newPalette = bindings.JobBindings.Palettes[last];
+        if (newPalette == bindings.ActivePalette) then
+            Error('You have not changed palettes since previous palette edit.  You cannot return to last palette.');
+            return;
+        elseif (newPalette == nil) then
+            Error('Your last palette doesn\'t exist.  You cannot return to it.');
+            return;
+        end
+
+        bindings.LastPaletteIndex = bindings.ActivePaletteIndex;
+        bindings.ActivePalette = newPalette;
+        bindings.ActivePaletteIndex = last;
+        ApplyBindings();
+        if (gBindingGUI:GetActive()) then
+            gBindingGUI:UpdatePalette();
+        end
     end
 end
 

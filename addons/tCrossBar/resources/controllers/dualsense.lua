@@ -204,7 +204,7 @@ local layout = {
         'Touchpad',
         'Playstation',
         'Microphone',
-    };
+    },
 
     --Default controls until user configures bindings.  Must exact match strings in ButtonMap.    
     Defaults = {
@@ -227,8 +227,7 @@ local layout = {
         BindingConfirm = 'Circle',
         BindingCancel = 'Cross',
         BindingTab = 'Triangle',
-    };
-
+    },
 
     --[[
         Key is the directinput offset, which is the same value used in event callback as 'button'.

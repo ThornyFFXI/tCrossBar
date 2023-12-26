@@ -126,13 +126,35 @@ local function UpdateMacroImage()
     end
 end
 
+local blockedAbilities = T{
+    567, --Pet Commands
+    603, --Blood Pact: Rage
+    609, --Phantom Roll
+    636, --Quick Draw
+    684, --Blood Pact: Ward
+    694, --Sambas
+    695, --Waltzes
+    710, --Jigs
+    711, --Steps
+    712, --Flourishes I
+    725, --Flourishes II
+    735, --Stratagems
+    763, --Ready
+    775, --Flourishes III
+    869, --Rune Enchantment
+    891, --Ward
+    892, --Effusion
+};
 Setup.Ability = function(skipUpdate)
     state.ActionResources = T{};
     local resMgr = AshitaCore:GetResourceManager();
+
     for i = 0x200,0x600 do
-        local res = resMgr:GetAbilityById(i);
-        if (res) and (player:KnowsAbility(res.Id)) then
-            state.ActionResources:append(res);
+        if (not blockedAbilities:contains(i)) then
+            local res = resMgr:GetAbilityById(i);
+            if (res) and (player:KnowsAbility(res.Id)) then
+                state.ActionResources:append(res);
+            end
         end
     end
 
