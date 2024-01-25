@@ -96,8 +96,11 @@ ashita.events.register('d3d_present', 'd3d_present_cb', function ()
             renderTarget = gDoubleDisplay;
         end
     elseif (macroState < 3) then
-        if (gSettings.SwapToSingleDisplay == false) then
+        if (gSettings.LTRTMode == 'FullDouble') then
             renderTarget = gDoubleDisplay;
+        elseif (gSettings.LTRTMode == 'HalfDouble') then
+            gDoubleDisplay:Render(macroState, true);
+            return;
         end
     end
 

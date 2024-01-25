@@ -4,6 +4,11 @@ local scaling = require('scaling');
 local state = {
     IsOpen = { false }
 };
+local ltrtmodes = T{
+    'FullDouble',
+    'HalfDouble',
+    'Single'
+}
 local validControls = T{
     { Name='Macro1', Description='Triggers the top macro of the left grouping.' },
     { Name='Macro2', Description='Triggers the right macro of the left grouping.' },
@@ -300,11 +305,21 @@ function exposed:Render()
                     imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
                     CheckBox('Always Show Double', 'ShowDoubleDisplay');
                     imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
-                    CheckBox('Condense To Single', 'SwapToSingleDisplay');
-                    imgui.ShowHelp('When enabled, pressing L2 or R2 will show only the relevant set instead of both sets.');
                     imgui.TextColored(header, 'Binding Menu');
                     CheckBox('Default To <st>', 'DefaultSelectTarget');
                     imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');
+                    imgui.TextColored(header, 'LT-RT Display');
+                    imgui.ShowHelp('Determines what should be displayed when using the single LT or single RT macro.');
+                    if (imgui.BeginCombo('##tCrossBarLTRTMode', gSettings.LTRTMode, ImGuiComboFlags_None)) then
+                        for _,text in ipairs(ltrtmodes) do
+                            if (imgui.Selectable(text, gSettings.LTRTMode == text)) then
+                                gSettings.LTRTMode = text;
+                                settings.save();
+                            end
+                        end
+                        imgui.EndCombo();
+                    end
+
                     imgui.EndTabItem();
                 end
                 

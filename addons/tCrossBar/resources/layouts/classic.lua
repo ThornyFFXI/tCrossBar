@@ -357,26 +357,31 @@ return {
         },
     
         --Texture must be defined in textures table.  Objects are rendered in order, prior to square elements.
+        --For double display only, you can specify a macroState (1 = LT, 2 = RT) as AssociatedState to limit the display to that macro state in HalfFull mode.
         FixedObjects = T{
             T{
                 OffsetX = 60,
                 OffsetY = 57,
                 Texture = 'Dpad',
+                AssociatedState = 1,
             },
             T{
                 OffsetX = 234,
                 OffsetY = 57,
                 Texture = 'Buttons',
+                AssociatedState = 1,
             },
             T{
                 OffsetX = 448,
                 OffsetY = 57,
                 Texture = 'Dpad',
+                AssociatedState = 2,
             },
             T{
                 OffsetX = 622,
                 OffsetY = 57,
                 Texture = 'Buttons',
+                AssociatedState = 2,
             },
         },
     

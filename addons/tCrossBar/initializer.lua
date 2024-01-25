@@ -43,7 +43,7 @@ local defaultSettings = T{
     ShowSkillchainAnimation = true,
     ShowTrigger = true,
     ShowPalette = true,
-    ShowSinglePalette = true,
+    ShowSinglePalette = false,
 
     --Behavior tab..
     ClickToActivate = true,
@@ -54,6 +54,7 @@ local defaultSettings = T{
     EnableDoubleTap = true,
     EnablePriority = true,
     ShowDoubleDisplay = true,
+    LTRTMode = 'FullDouble',
     SwapToSingleDisplay = false,
     AllowInventoryPassthrough = true,
 
@@ -65,7 +66,17 @@ local defaultSettings = T{
 gSettings = settings.load(defaultSettings);
 
 local function UpdateSettings()
-    if (gSettings.Version ~= addon.version) then
+    local version = tonumber(addon.version);
+    if (gSettings.Version ~= version) then
+        if (gSettings.SwapToSingleDisplay ~= nil) then
+            if (gSettings.SwapToSingleDisplay == true) then
+                gSettings.LTRTMode = 'Single';
+            else
+                gSettings.LTRTMode = 'FullDouble';
+            end
+            gSettings.SwapToSingleDisplay = nil;
+        end
+
         if (type(gSettings.Version) ~= 'number') or (gSettings.Version < 2.0) then
             for key,val in pairs(gSettings) do
                 local newVal = defaultSettings[key];
@@ -77,7 +88,7 @@ local function UpdateSettings()
             end
             Message('Settings from a prior incompatible version detected.  Updating settings.')
         end
-        gSettings.Version = tonumber(addon.version);
+        gSettings.Version = version;
         settings.save();
     end
 end

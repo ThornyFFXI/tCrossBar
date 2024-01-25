@@ -72,7 +72,7 @@ end
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
 local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
-function DoubleDisplay:Render(macroState)
+function DoubleDisplay:Render(macroState, forceSingle)
     if (self.Valid == false) then
         return;
     end
@@ -85,31 +85,54 @@ function DoubleDisplay:Render(macroState)
         local component = self.Layout.Textures[object.Texture];
         vec_position.x = pos[1] + object.OffsetX;
         vec_position.y = pos[2] + object.OffsetY;
-        sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+
+        local associatedState = object.AssociatedState;
+        if (not forceSingle) or (associatedState == nil) or (associatedState == macroState) then
+            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+        end
     end
 
-    for _,element in ipairs(self.Elements) do
+    local renderElements = T{};
+    if (macroState == 1) or (not forceSingle) then
+        for i = 1,8 do
+            renderElements:append(self.Elements[i]);
+        end
+    end
+    if (macroState == 2) or (not forceSingle) then
+        for i = 9,16 do
+            renderElements:append(self.Elements[i]);
+        end  
+    end
+
+    for _,element in ipairs(renderElements) do
         element:RenderIcon(sprite);
     end
 
-    local paletteText = gBindings:GetDisplayText();
-    if (gSettings.ShowPalette) and (paletteText) then
-        local obj = self.PaletteDisplay;
-        obj:set_text(paletteText);
-        local texture, rect = obj:get_texture();
-        local posX = obj.OffsetX + pos[1];
-        if (obj.settings.font_alignment == 1) then
-            vec_position.x = posX - (rect.right / 2);
-        elseif (obj.settings.font_alignment == 2) then
-            vec_position.x = posX - rect.right;
-        else
-            vec_position.x = posX;;
-        end
-        vec_position.y = obj.OffsetY + pos[2];
-        sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+    local showPalette = gSettings.ShowPalette;
+    if (forceSingle) then
+        showPalette = gSettings.ShowSinglePalette;
     end
     
-    for _,element in ipairs(self.Elements) do
+    if showPalette then
+        local paletteText = gBindings:GetDisplayText();
+        if (paletteText) then
+            local obj = self.PaletteDisplay;
+            obj:set_text(paletteText);
+            local texture, rect = obj:get_texture();
+            local posX = obj.OffsetX + pos[1];
+            if (obj.settings.font_alignment == 1) then
+                vec_position.x = posX - (rect.right / 2);
+            elseif (obj.settings.font_alignment == 2) then
+                vec_position.x = posX - rect.right;
+            else
+                vec_position.x = posX;;
+            end
+            vec_position.y = obj.OffsetY + pos[2];
+            sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+        end
+    end
+    
+    for _,element in ipairs(renderElements) do
         element:RenderText(sprite);
     end
 
