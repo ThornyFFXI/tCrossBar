@@ -146,7 +146,17 @@ function exposed:Render()
                         end
                         imgui.EndCombo();
                     end
+                    imgui.Button('-##DecrementSingle', { 32, 0 });
+                    if (imgui.IsItemClicked()) then
+                        state.SingleScale[1] = state.SingleScale[1] - 0.01;
+                    end
+                    imgui.SameLine();
                     imgui.SliderFloat('##SingleScale', state.SingleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
+                    imgui.SameLine();
+                    imgui.Button('+##IncrementSingle', { 32, 0 });
+                    if (imgui.IsItemClicked()) then
+                        state.SingleScale[1] = state.SingleScale[1] + 0.01;
+                    end
                     if (gSingleDisplay.Valid) then
                         local button = string.format('%s##MoveToggleSingle', (state.DragTarget == gSingleDisplay) and 'End Drag' or 'Allow Drag');
                         if (imgui.Button(button)) then
@@ -196,7 +206,17 @@ function exposed:Render()
                         end
                         imgui.EndCombo();
                     end
+                    imgui.Button('-##DecrementDouble', { 32, 0 });
+                    if (imgui.IsItemClicked()) then
+                        state.DoubleScale[1] = state.DoubleScale[1] - 0.01;
+                    end
+                    imgui.SameLine();
                     imgui.SliderFloat('##DoubleScale', state.DoubleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
+                    imgui.SameLine();
+                    imgui.Button('+##IncrementDouble', { 32, 0 });
+                    if (imgui.IsItemClicked()) then
+                        state.DoubleScale[1] = state.DoubleScale[1] + 0.01;
+                    end
                     if (gDoubleDisplay.Valid) then
                         local button = string.format('%s##MoveToggleDouble', (state.DragTarget == gDoubleDisplay) and 'End Drag' or 'Allow Drag');
                         if (imgui.Button(button)) then
