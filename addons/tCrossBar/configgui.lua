@@ -129,7 +129,10 @@ local function ControllerBindingCombo(member, helpText)
 end
 
 local exposed = {};
-
+local scaleAdjustButtonWidth = 25;
+local scaleSliderSpacing = 8;
+local scaleSliderWidth = 224;
+local crossBarConfigWidth = scaleAdjustButtonWidth + scaleSliderSpacing + scaleSliderWidth + scaleSliderSpacing + scaleAdjustButtonWidth;
 function exposed:Render()
     if (state.IsOpen[1]) then
         if (imgui.Begin(string.format('%s v%s Configuration', addon.name, addon.version), state.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
@@ -138,6 +141,7 @@ function exposed:Render()
                 if imgui.BeginTabItem('Layouts##tCrossbarConfigLayoutsTab', 0, state.ForceTab and 6 or 4) then
                     state.ForceTab = nil;
                     imgui.TextColored(header, 'Single Layout');
+                    imgui.SetNextItemWidth(crossBarConfigWidth);
                     if (imgui.BeginCombo('##tCrossBarSingleLayoutSelectConfig', state.Layouts[state.SingleLayout], ImGuiComboFlags_None)) then
                         for index,layout in ipairs(state.Layouts) do
                             if (imgui.Selectable(layout, index == state.SingleLayout)) then
@@ -146,14 +150,15 @@ function exposed:Render()
                         end
                         imgui.EndCombo();
                     end
-                    imgui.Button('-##DecrementSingle', { 32, 0 });
+                    imgui.Button('-##DecrementSingle', { scaleAdjustButtonWidth, 0 });
                     if (imgui.IsItemClicked()) then
                         state.SingleScale[1] = state.SingleScale[1] - 0.01;
                     end
                     imgui.SameLine();
+                    imgui.SetNextItemWidth(scaleSliderWidth);
                     imgui.SliderFloat('##SingleScale', state.SingleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
                     imgui.SameLine();
-                    imgui.Button('+##IncrementSingle', { 32, 0 });
+                    imgui.Button('+##IncrementSingle', { scaleAdjustButtonWidth, 0 });
                     if (imgui.IsItemClicked()) then
                         state.SingleScale[1] = state.SingleScale[1] + 0.01;
                     end
@@ -198,6 +203,7 @@ function exposed:Render()
                     imgui.ShowHelp('Applies the selected layout to your single display.', true);
                     
                     imgui.TextColored(header, 'Double Layout');
+                    imgui.SetNextItemWidth(crossBarConfigWidth);
                     if (imgui.BeginCombo('##tCrossBarDoubleLayoutSelectConfig', state.Layouts[state.DoubleLayout], ImGuiComboFlags_None)) then
                         for index,layout in ipairs(state.Layouts) do
                             if (imgui.Selectable(layout, index == state.DoubleLayout)) then
@@ -206,14 +212,15 @@ function exposed:Render()
                         end
                         imgui.EndCombo();
                     end
-                    imgui.Button('-##DecrementDouble', { 32, 0 });
+                    imgui.Button('-##DecrementDouble', { scaleAdjustButtonWidth, 0 });
                     if (imgui.IsItemClicked()) then
                         state.DoubleScale[1] = state.DoubleScale[1] - 0.01;
                     end
                     imgui.SameLine();
+                    imgui.SetNextItemWidth(scaleSliderWidth);
                     imgui.SliderFloat('##DoubleScale', state.DoubleScale, 0.5, 3, '%.2f', ImGuiSliderFlags_AlwaysClamp);
                     imgui.SameLine();
-                    imgui.Button('+##IncrementDouble', { 32, 0 });
+                    imgui.Button('+##IncrementDouble', { scaleAdjustButtonWidth, 0 });
                     if (imgui.IsItemClicked()) then
                         state.DoubleScale[1] = state.DoubleScale[1] + 0.01;
                     end
