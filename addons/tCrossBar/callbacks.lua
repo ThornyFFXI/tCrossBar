@@ -1,4 +1,3 @@
-local renderTarget;
 local player = require('state.player');
 local pGameMenu = ashita.memory.find('FFXiMain.dll', 0, "8B480C85C974??8B510885D274??3B05", 16, 0);
 local pEventSystem = ashita.memory.find('FFXiMain.dll', 0, "A0????????84C0741AA1????????85C0741166A1????????663B05????????0F94C0C3", 0, 0);
@@ -72,39 +71,14 @@ ashita.events.register('d3d_present', 'd3d_present_cb', function ()
     gConfigGUI:Render();
     gBindingGUI:Render();
 
-    renderTarget = nil;
-    if (gConfigGUI.ForceDisplay) then
-        gConfigGUI.ForceDisplay:Render(1);
-        renderTarget = gConfigGUI.ForceDisplay;
-        return;
-    end
-
-    if (gBindingGUI.ForceDisplay) then
-        gBindingGUI.ForceDisplay:Render(gBindingGUI.ForceState);
-        renderTarget = gBindingGUI.ForceDisplay;
-        return;
-    end
-
     if (ShouldHide()) then
         return;
     end
-    
-    renderTarget = gSingleDisplay;
-    local macroState = gController:GetMacroState();
-    if (macroState == 0) then
-        if (gSettings.ShowDoubleDisplay) then
-            renderTarget = gDoubleDisplay;
-        end
-    elseif (macroState < 3) then
-        if (gSettings.LTRTMode == 'FullDouble') then
-            renderTarget = gDoubleDisplay;
-        elseif (gSettings.LTRTMode == 'HalfDouble') then
-            gDoubleDisplay:Render(macroState, true);
-            return;
-        end
-    end
 
-    renderTarget:Render(macroState);
+    gElementGroup:ClearHitboxes();
+    if (gRenderer ~= nil) then
+        gRenderer:Render(gElementGroup:GetElements(), gController:GetMacroState());
+    end
 end);
 
 local mouseDown;

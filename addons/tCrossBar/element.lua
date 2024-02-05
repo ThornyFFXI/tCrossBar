@@ -1,7 +1,4 @@
-local d3d8     = require('d3d8');
 local encoding = require('gdifonts.encoding');
-local ffi      = require('ffi');
-local gdi      = require('gdifonts.include');
 local updaters = {
     ['Ability']     = require('updaters.ability'),
     ['Command']     = require('updaters.command'),
@@ -44,23 +41,21 @@ end
 
 local Element = {};
 
-function Element:New(hotkey, layout)
+function Element:New(hotkey)
     local o = {};
     setmetatable(o, self);
     self.__index = self;
     o.State = {
         Available = false,
         Ready = false,
-        Cost = '',
+        Cost = -1,
         Hotkey = hotkey,
         Name = '',
-        Recast = '',
+        Recast = -1,
         Skillchain = nil,
     };
     local updater = updaters.Empty;
     o.Activation = 0;
-    o.Layout = layout;
-    o:Initialize();
     o.Updater = updater:New();
     o.Updater:Initialize(o);
     return o;
@@ -87,39 +82,22 @@ end
 
 function Element:HitTest(x, y)
     local hitbox = self.HitBox;
-    if (x < hitbox.MinX) or (x > hitbox.MaxX) then
+    if (hitbox == nil) then
         return false;
     end
 
-    return (y >= hitbox.MinY) and (y <= hitbox.MaxY);
-end
-
-local textOrder = T { 'Hotkey', 'Cost', 'Recast', 'Name' };
-local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
-local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
-local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
-function Element:Initialize()
-    self.FontObjects = T{};
-    for _,entry in ipairs(textOrder) do
-        local data = self.Layout[entry];
-        if data then
-            local obj = gdi:create_object(data, true);
-            obj.OffsetX = data.OffsetX;
-            obj.OffsetY = data.OffsetY;
-            self.FontObjects[entry] = obj;
-        end
+    if (x < hitbox.X) or (x < hitbox.Y) then
+        return false;
     end
+    if (x > (hitbox.X + hitbox.Width)) then
+        return false;
+    end
+    return (y < (hitbox.Y + hitbox.Height));
 end
 
-function Element:SetPosition(position)
-    self.PositionX = position[1] + self.OffsetX;
-    self.PositionY = position[2] + self.OffsetY;
-    self.HitBox = {
-        MinX = self.PositionX + self.Layout.Icon.OffsetX,
-        MaxX = self.PositionX + self.Layout.Icon.OffsetX + self.Layout.Icon.Width,
-        MinY = self.PositionY + self.Layout.Icon.OffsetY,
-        MaxY = self.PositionY + self.Layout.Icon.OffsetY + self.Layout.Icon.Height,
-    };
+function Element:Tick()
+    self.Updater:Tick();
+    self.State.Activated = ((self.Activation + gSettings.TriggerDuration) > os.clock());
 end
 
 function Element:UpdateBinding(binding)
@@ -127,7 +105,6 @@ function Element:UpdateBinding(binding)
         self.Updater:Destroy();
     end
 
-    self.Icon = nil;
     self.Binding = binding;
     local updater = updaters.Empty;
     self.State.Name = '';
@@ -146,145 +123,10 @@ function Element:UpdateBinding(binding)
     self.Updater = updater:New();
     self.Updater:Initialize(self, self.Binding);
 
-    if (self.Binding ~= nil) then
-        local tx = gTextureCache:GetTexture(self.Binding.Image);
-        local dimensions = { Width = self.Layout.Icon.Width, Height=self.Layout.Icon.Height };
-        if tx and dimensions then
-            local preparedTexture = {};
-            preparedTexture.Texture = tx.Texture;
-            preparedTexture.Rect = ffi.new('RECT', { 0, 0, tx.Width, tx.Height });
-            preparedTexture.Scale = ffi.new('D3DXVECTOR2', { dimensions.Width / tx.Width, dimensions.Height / tx.Height });
-            self.Icon = preparedTexture;
-        end
-    end
-end
-
-function Element:RenderIcon(sprite)
-    self.Updater:Tick();
-
-    local positionX = self.PositionX;
-    local positionY = self.PositionY;
-    local layout = self.Layout;
-
-    --Draw frame first..
-    if ((self.Binding) or (gSettings.ShowEmpty)) and (gSettings.ShowFrame) then
-        local component = layout.Textures.Frame;
-        if component then
-            vec_position.x = positionX + layout.Frame.OffsetX;
-            vec_position.y = positionY + layout.Frame.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
-        end
-    end
-
-    if (self.Binding == nil) then
-        return;
-    end
-
-    --Evaluate skillchain state..
-    local icon = self.Icon;
-    vec_position.x = positionX + layout.Icon.OffsetX;
-    vec_position.y = positionY + layout.Icon.OffsetY;
-    if (self.State.Skillchain ~= nil) then
-        if (self.State.Skillchain.Open) then
-            if (self.SkillchainAnimation == nil) then
-                self.SkillchainAnimation =
-                {
-                    Frame = 1,
-                    Time = os.clock();
-                };
-            elseif (os.clock() > (self.SkillchainAnimation.Time + layout.SkillchainFrameLength)) then
-                self.SkillchainAnimation.Frame = self.SkillchainAnimation.Frame + 1;
-                if (self.SkillchainAnimation.Frame > #layout.SkillchainFrames) then
-                    self.SkillchainAnimation.Frame = 1;
-                end
-                self.SkillchainAnimation.Time = os.clock();
-            end
-        else
-            self.SkillchainAnimation = nil;
-        end
-        
-        if (gSettings.ShowSkillchainIcon) and (self.Binding.ShowSkillchainIcon) then
-            icon = layout.Textures[self.State.Skillchain.Name];
-        end
+    if (self.Binding) then
+        self.Texture = gTextureCache:GetTexture(self.Binding.Image);
     else
-        self.SkillchainAnimation = nil;
-    end
-
-    --Draw icon over frame..
-    if icon then
-        vec_position.x = positionX + layout.Icon.OffsetX;
-        vec_position.y = positionY + layout.Icon.OffsetY;
-        local opacity = d3dwhite;
-        if (gSettings.ShowFade) and (self.Binding.ShowFade) and (not self.State.Ready) then
-            opacity = layout.FadeOpacity;
-        end
-        sprite:Draw(icon.Texture, icon.Rect, icon.Scale, nil, 0.0, vec_position, opacity);
-    end
-
-    --Draw skillchain animation if applicable..
-    if (self.SkillchainAnimation) and (gSettings.ShowSkillchainAnimation) and (self.Binding.ShowSkillchainAnimation) then
-        local component = layout.SkillchainFrames[self.SkillchainAnimation.Frame];
-        if component then
-            vec_position.x = positionX + layout.Icon.OffsetX;
-            vec_position.y = positionY + layout.Icon.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
-        end
-    end
-
-    --Draw crossout if applicable..
-    if (gSettings.ShowCross) and (self.Binding.ShowCross) and (not self.State.Available) then
-        local component = layout.Textures.Cross;
-        if component then
-            vec_position.x = positionX + layout.Icon.OffsetX;
-            vec_position.y = positionY + layout.Icon.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
-        end
-    end
-
-    --Draw trigger if applicable..
-    if (gSettings.ShowTrigger) and (self.Binding.ShowTrigger) and (os.clock() < (self.Activation + gSettings.TriggerDuration)) then
-        local component = layout.Textures.Trigger;
-        if component then
-            vec_position.x = positionX + layout.Icon.OffsetX;
-            vec_position.y = positionY + layout.Icon.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, layout.TriggerOpacity);
-        end
-    end
-end
-
-function Element:RenderText(sprite)
-    if (self.Binding == nil) then
-        return;
-    end
-
-    local positionX = self.PositionX;
-    local positionY = self.PositionY;
-    
-    --Draw text elements..
-    for _,entry in ipairs(textOrder) do
-        local setting = 'Show' .. entry;
-        if (gSettings[setting]) and (self.Binding[setting]) then
-            local obj = self.FontObjects[entry];
-            if obj then
-                local text = self.State[entry];
-                if (type(text) == 'string') and (text ~= '') then
-                    obj:set_text(text);
-                    local texture, rect = obj:get_texture();
-                    if (texture ~= nil) then
-                        local posX = obj.OffsetX + positionX;
-                        if (obj.settings.font_alignment == 1) then
-                            vec_position.x = posX - (rect.right / 2);
-                        elseif (obj.settings.font_alignment == 2) then
-                            vec_position.x = posX - rect.right;
-                        else
-                            vec_position.x = posX;;
-                        end
-                        vec_position.y = obj.OffsetY + positionY;
-                        sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
-                    end
-                end
-            end
-        end
+        self.Texture = nil;
     end
 end
 

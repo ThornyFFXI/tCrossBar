@@ -5,86 +5,6 @@ local player               = require('state.player');
 local AbilityRecastPointer = ashita.memory.find('FFXiMain.dll', 0, '894124E9????????8B46??6A006A00508BCEE8', 0x19, 0);
 AbilityRecastPointer       = ashita.memory.read_uint32(AbilityRecastPointer);
 
-local function ItemCost(updater, items)
-    local containers = updater.Containers;
-    if (updater.Containers == nil) then
-        containers = T{ 0 };
-        local useTemporary = false;
-        local useWardrobes = false;
-        for _,itemId in ipairs(items) do
-            local resource = AshitaCore:GetResourceManager():GetItemById(itemId);
-            if (bit.band(resource.Flags, 0x800) ~= 0) then
-                useWardrobes = true;
-            else
-                useTemporary = true;
-            end
-        end
-        if (useWardrobes) then
-            containers = T { 0, 8, 10, 11, 12, 13, 14, 15, 16 };
-        end
-        if (useTemporary) then
-            containers:append(3);
-        end
-        updater.Containers = containers;
-    end
-
-    local itemCount = 0;
-    for _,item in ipairs(items) do
-        local itemData = inventory:GetItemData(item);
-        if (itemData ~= nil) then
-            for _,itemEntry in ipairs(itemData.Locations) do
-                if (updater.Containers:contains(itemEntry.Container)) then
-                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
-                end
-            end
-        end
-    end
-
-    return tostring(itemCount), (itemCount > 0);
-end
-
-local function ChargeCost(updater, recastReady)
-    return tostring(recastReady), (recastReady > 0);
-end
-
-local function FinishingMoveCost(updater, minimumMoves)
-    local finishingMoves = 0;
-
-    local player = AshitaCore:GetMemoryManager():GetPlayer()
-    local buffs = player:GetBuffs();
-    local moveMap = {
-        [381] = 1,
-        [382] = 2,
-        [383] = 3,
-        [384] = 4,
-        [385] = 5,
-        [588] = 6
-    };
-    for i=1,32 do
-        local count = moveMap[buffs[i]];
-        if count ~= nil then
-            finishingMoves = count;
-        end
-    end
-
-    return tostring(finishingMoves), (finishingMoves >= minimumMoves);
-end
-
-local function RuneEnchantmentCost(updater)
-    local runeCount = 0;
-
-    local player = AshitaCore:GetMemoryManager():GetPlayer()
-    local buffs = player:GetBuffs();
-    for i=1,32 do
-        local buff = buffs[i];
-        if (buff > 522) and (buff < 531) then
-            runeCount = runeCount + 1;
-        end
-    end
-
-    return tostring(runeCount), (runeCount > 0);
-end
-
 local function GetAbilityTimerData(id)
     for i = 1,31 do
         local compId = ashita.memory.read_uint8(AbilityRecastPointer + (i * 8) + 3);
@@ -136,83 +56,150 @@ local function GetRecastTimer(timerId)
 
     return 0;
 end
+--[[
+    Cost functions return a number to display, and a bool for whether it's met.  -1 indicates hidden.
+    Recast functions return 
+]]--
 
-local function RecastToString(timer)
-    if (timer >= 216000) then
-        local h = math.floor(timer / (216000));
-        local m = math.floor(math.fmod(timer, 216000) / 3600);
-        return string.format('%i:%02i', h, m);
-    elseif (timer >= 3600) then
-        local m = math.floor(timer / 3600);
-        local s = math.floor(math.fmod(timer, 3600) / 60);
-        return string.format('%i:%02i', m, s);
-    else
-        if (timer < 60) then
-            return '1';
-        else
-            return string.format('%i', math.floor(timer / 60));
+local function ItemCost(updater, items)
+    local containers = updater.Containers;
+    if (updater.Containers == nil) then
+        containers = T{ 0 };
+        local useTemporary = false;
+        local useWardrobes = false;
+        for _,itemId in ipairs(items) do
+            local resource = AshitaCore:GetResourceManager():GetItemById(itemId);
+            if (bit.band(resource.Flags, 0x800) ~= 0) then
+                useWardrobes = true;
+            else
+                useTemporary = true;
+            end
+        end
+        if (useWardrobes) then
+            containers = T { 0, 8, 10, 11, 12, 13, 14, 15, 16 };
+        end
+        if (useTemporary) then
+            containers:append(3);
+        end
+        updater.Containers = containers;
+    end
+
+    local itemCount = 0;
+    for _,item in ipairs(items) do
+        local itemData = inventory:GetItemData(item);
+        if (itemData ~= nil) then
+            for _,itemEntry in ipairs(itemData.Locations) do
+                if (updater.Containers:contains(itemEntry.Container)) then
+                    itemCount = itemCount + inventory:GetItemTable(itemEntry.Container, itemEntry.Index).Count;
+                end
+            end
         end
     end
+
+    return itemCount, (itemCount > 0);
 end
+
+local function ChargeCost(updater, recastReady)
+    return recastReady, (recastReady > 0);
+end
+
+local function FinishingMoveCost(updater, minimumMoves)
+    local finishingMoves = 0;
+
+    local player = AshitaCore:GetMemoryManager():GetPlayer()
+    local buffs = player:GetBuffs();
+    local moveMap = {
+        [381] = 1,
+        [382] = 2,
+        [383] = 3,
+        [384] = 4,
+        [385] = 5,
+        [588] = 6
+    };
+    for i=1,32 do
+        local count = moveMap[buffs[i]];
+        if count ~= nil then
+            finishingMoves = count;
+        end
+    end
+
+    return finishingMoves, (finishingMoves >= minimumMoves);
+end
+
+local function RuneEnchantmentCost(updater)
+    local runeCount = 0;
+
+    local player = AshitaCore:GetMemoryManager():GetPlayer()
+    local buffs = player:GetBuffs();
+    for i=1,32 do
+        local buff = buffs[i];
+        if (buff > 522) and (buff < 531) then
+            runeCount = runeCount + 1;
+        end
+    end
+
+    return runeCount, (runeCount > 0);
+end
+
 
 --This call returns two values.
 --First value is true/false for whether ability can be used based on current recast, to be used for dimming icons.
---Second value is a string to be displayed on recast element, or nil if the element should not be shown.
+--Second value is time until recast is ready.
 local function GetRecastData(resource)
     local timer = GetRecastTimer(resource.RecastTimerId);
     if (timer == 0) then
-        return true, '';
+        return true, -1;
     else
-        return false, RecastToString(timer);
+        return false, timer / 60;
     end
 end
 
 
 --Each of these calls returns two values.
 --First value is number of charges available.
---Second value is time until next charge.
+--Second value is time until next charge (-1 if recast zero)
 local function GetStratagemData()
     local maxCount = GetMaxStratagems();
     if (maxCount == 0) then
-        return 0, '';
+        return 0, -1;
     end
 
     local data = GetAbilityTimerData(231);
     if (data.Recast == 0) then
-        return maxCount, '';
+        return maxCount, -1;
     end
     
     local baseRecast = 60 * (240 + data.Modifier);
     local chargeValue = baseRecast / maxCount;
     local remainingCharges = math.floor((baseRecast - data.Recast) / chargeValue);
     local timeUntilNextCharge = math.fmod(data.Recast, chargeValue);
-    return remainingCharges, RecastToString(timeUntilNextCharge);
+    return remainingCharges, timeUntilNextCharge / 60;
 end
 
 local function GetQuickDrawData()
     local data = GetAbilityTimerData(195);
     if (data.Recast == 0) then
-        return 2, '';
+        return 2, -1;
     end
     
     local baseRecast = 60 * (120 + data.Modifier);
     local chargeValue = baseRecast / 2;
     local remainingCharges = math.floor((baseRecast - data.Recast) / chargeValue);
     local timeUntilNextCharge = math.fmod(data.Recast, chargeValue);
-    return remainingCharges, RecastToString(timeUntilNextCharge);
+    return remainingCharges, timeUntilNextCharge / 60;
 end
 
 local function GetReadyData()
     local data = GetAbilityTimerData(102);
     if (data.Recast == 0) then
-        return 3, '';
+        return 3, -1;
     end
 
     local baseRecast = 60 * (90 + data.Modifier);
     local chargeValue = baseRecast / 3;
     local remainingCharges = math.floor((baseRecast - data.Recast) / chargeValue);
     local timeUntilNextCharge = math.fmod(data.Recast, chargeValue);
-    return remainingCharges, RecastToString(timeUntilNextCharge);
+    return remainingCharges, timeUntilNextCharge / 60;
 end
 
 function Updater:New()
@@ -240,15 +227,15 @@ function Updater:Initialize(element, binding)
         self.RecastFunction = GetRecastData;
         if (self.Resource.ManaCost > 0) then
             self.CostFunction = (function(a)
-                return tostring(a), (AshitaCore:GetMemoryManager():GetParty():GetMemberMP(0) >= a);
+                return a, (AshitaCore:GetMemoryManager():GetParty():GetMemberMP(0) >= a);
             end):bind1(self.Resource.ManaCost);
         elseif (self.Resource.TPCost < 1) then
             self.CostFunction = function()
-                return '', true;
+                return -1, true;
             end
         else
             self.CostFunction = (function(a)
-                return tostring(a), (AshitaCore:GetMemoryManager():GetParty():GetMemberTP(0) >= a);
+                return a, (AshitaCore:GetMemoryManager():GetParty():GetMemberTP(0) >= a);
             end):bind1(self.Resource.TPCost);
         end
     end

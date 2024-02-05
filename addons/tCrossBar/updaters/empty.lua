@@ -17,9 +17,9 @@ end
 
 function Updater:Tick()
     self.State.Available = true;
-    self.State.Cost = '';
+    self.State.Cost = -1;
     self.State.Ready = true;
-    self.State.Recast = '';
+    self.State.Recast = -1;
     self.State.Skillchain = nil;
 end
 

@@ -1,5 +1,5 @@
-return {
-    Single = {
+return T{
+    Single = T{
         --Amount is not fixed, you can adjust as desired.
         SkillchainFrames = T{
             'misc/crawl1.png',
@@ -21,7 +21,7 @@ return {
         ]]--
         Textures = T{
             Cross         = 'misc/cross.png',
-            Frame         = { Path='misc/frame.png', Width=44, Height=44 },
+            Frame         = T{ Path='misc/frame.png', Width=44, Height=44 },
             Trigger       = 'misc/trigger.png',
             Liquefaction  = 'skillchains/Liquefaction.png',
             Scission      = 'skillchains/Scission.png',
@@ -37,9 +37,9 @@ return {
             Fragmentation = 'skillchains/Fragmentation.png',
             Light         = 'skillchains/Light.png',
             Darkness      = 'skillchains/Darkness.png',
-            Buttons       = { Path='misc/buttons.png', Width=40, Height=40 },
-            Dpad          = { Path='misc/dpad.png', Width=40, Height=40 },
-            DragHandle    = { Path='misc/drag.png', Width=26, Height=26 },
+            Buttons       = T{ Path='misc/buttons.png', Width=40, Height=40 },
+            Dpad          = T{ Path='misc/dpad.png', Width=40, Height=40 },
+            DragHandle    = T{ Path='misc/drag.png', Width=26, Height=26 },
         },
 
         --Transparency to be used when bound macro's action is not known.  [0-255]
@@ -50,20 +50,20 @@ return {
         
         --Icon to be displayed when draggability is enabled.
         --Must have a valid texture with specified width/height.
-        DragHandle = {
+        DragHandle = T{
             OffsetX = 0,
             OffsetY = 0,
             Texture = 'DragHandle',
         },
 
         --The border of each macro element.  Offsets are relative to the macro element's placement.
-        Frame = {
+        Frame = T{
             OffsetX = 0,
             OffsetY = 0,
         },
 
         --The inner icon for each macro element.  Offsets are relative to the macro element's placement.
-        Icon = {
+        Icon = T{
             OffsetX = 2,
             OffsetY = 2,
             Width = 40,
@@ -71,7 +71,7 @@ return {
         },
 
         --The text object to display macro or hotkey activation.
-        Hotkey = {
+        Hotkey = T{
             --If box height/width are specified, text object will not go past those bounds.
             --Otherwise, text object will be as large as necessary.
             box_height = 0,
@@ -92,7 +92,7 @@ return {
             OffsetX = 2,
             OffsetY = 2,
         },
-        Cost = {
+        Cost = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 2,
@@ -107,7 +107,7 @@ return {
             OffsetX = 42,
             OffsetY = 31,
         },
-        Recast = {
+        Recast = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 0,
@@ -122,7 +122,7 @@ return {
             OffsetX = 2,
             OffsetY = 31,
         },
-        Name = {
+        Name = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 1,
@@ -139,7 +139,7 @@ return {
         },
 
         --Text object to display palette name.
-        Palette = {
+        Palette = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 1,
@@ -170,7 +170,7 @@ return {
         },
 
         --Size of entire panel.  Used for prescreening element clicks and automatic positioning.  Not enforced for rendering.
-        Panel = {
+        Panel = T{
             Width = 358,
             Height = 168,
         },
@@ -189,18 +189,18 @@ return {
             Must remain 8 objects.
         ]]--
         Elements = T{
-            { OffsetX = 58, OffsetY = 0 },
-            { OffsetX = 116, OffsetY = 55 },
-            { OffsetX = 58, OffsetY = 110 },
-            { OffsetX = 0, OffsetY = 55 },
-            { OffsetX = 232, OffsetY = 0 },
-            { OffsetX = 290, OffsetY = 55 },
-            { OffsetX = 232, OffsetY = 110 },
-            { OffsetX = 174, OffsetY = 55 },
+            T{ OffsetX = 58, OffsetY = 0 },
+            T{ OffsetX = 116, OffsetY = 55 },
+            T{ OffsetX = 58, OffsetY = 110 },
+            T{ OffsetX = 0, OffsetY = 55 },
+            T{ OffsetX = 232, OffsetY = 0 },
+            T{ OffsetX = 290, OffsetY = 55 },
+            T{ OffsetX = 232, OffsetY = 110 },
+            T{ OffsetX = 174, OffsetY = 55 },
         },
     },
 
-    Double = {
+    Double = T{
         --Amount is not fixed, you can adjust as desired.
         SkillchainFrames = T{
             'misc/crawl1.png',
@@ -222,7 +222,7 @@ return {
         ]]--
         Textures = T{
             Cross         = 'misc/cross.png',
-            Frame         = { Path='misc/frame.png', Width=44, Height=44 },
+            Frame         = T{ Path='misc/frame.png', Width=44, Height=44 },
             Trigger       = 'misc/trigger.png',
             Liquefaction  = 'skillchains/Liquefaction.png',
             Scission      = 'skillchains/Scission.png',
@@ -238,9 +238,9 @@ return {
             Fragmentation = 'skillchains/Fragmentation.png',
             Light         = 'skillchains/Light.png',
             Darkness      = 'skillchains/Darkness.png',
-            Buttons       = { Path='misc/buttons.png', Width=40, Height=40 },
-            Dpad          = { Path='misc/dpad.png', Width=40, Height=40 },
-            DragHandle    = { Path='misc/drag.png', Width=26, Height=26 },
+            Buttons       = T{ Path='misc/buttons.png', Width=40, Height=40 },
+            Dpad          = T{ Path='misc/dpad.png', Width=40, Height=40 },
+            DragHandle    = T{ Path='misc/drag.png', Width=26, Height=26 },
         },
     
         --Transparency to be used when bound macro's action is not known.  [0-255]
@@ -250,14 +250,14 @@ return {
         TriggerOpacity = 128,    
         
         --Icon to be displayed when draggability is enabled.
-        DragHandle = {
+        DragHandle = T{
             OffsetX = 0,
             OffsetY = 0,
             Texture = 'DragHandle',
         },
 
         --The border of each macro element.  Offsets are relative to the macro element's placement.
-        Frame = {
+        Frame = T{
             OffsetX = 0,
             OffsetY = 0,
             Width = 44,
@@ -265,7 +265,7 @@ return {
         },
     
         --The inner icon for each macro element.  Offsets are relative to the macro element's placement.
-        Icon = {
+        Icon = T{
             OffsetX = 2,
             OffsetY = 2,
             Width = 40,
@@ -273,7 +273,7 @@ return {
         },
     
         --The text object to display macro or hotkey activation.
-        Hotkey = {
+        Hotkey = T{
             --If box height/width are specified, text object will not go past those bounds.
             --Otherwise, text object will be as large as necessary.
             box_height = 0,
@@ -293,7 +293,7 @@ return {
             OffsetX = 2,
             OffsetY = 2,
         },
-        Cost = {
+        Cost = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 2,
@@ -308,7 +308,7 @@ return {
             OffsetX = 42,
             OffsetY = 31,
         },
-        Recast = {
+        Recast = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 0,
@@ -323,7 +323,7 @@ return {
             OffsetX = 2,
             OffsetY = 31,
         },
-        Name = {
+        Name = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 1,
@@ -340,7 +340,7 @@ return {
         },
         
         --Text object to display palette name.  Offsets are relative to entire panel.
-        Palette = {
+        Palette = T{
             box_height = 0,
             box_width = 0,
             font_alignment = 1,
@@ -386,7 +386,7 @@ return {
         },
     
         --Size of entire panel.  Used for prescreening element clicks and automatic positioning.  Not enforced for rendering.
-        Panel = {
+        Panel = T{
             Width = 746,
             Height = 168,
         },
@@ -412,22 +412,22 @@ return {
                 16. Button Left(R2)
         ]]--
         Elements = T{
-            { OffsetX = 58, OffsetY = 0 },
-            { OffsetX = 116, OffsetY = 55 },
-            { OffsetX = 58, OffsetY = 110 },
-            { OffsetX = 0, OffsetY = 55 },
-            { OffsetX = 232, OffsetY = 0 },
-            { OffsetX = 290, OffsetY = 55 },
-            { OffsetX = 232, OffsetY = 110 },
-            { OffsetX = 174, OffsetY = 55 },
-            { OffsetX = 446, OffsetY = 0 },
-            { OffsetX = 504, OffsetY = 55 },
-            { OffsetX = 446, OffsetY = 110 },
-            { OffsetX = 388, OffsetY = 55 },
-            { OffsetX = 620, OffsetY = 0 },
-            { OffsetX = 678, OffsetY = 55 },
-            { OffsetX = 620, OffsetY = 110 },
-            { OffsetX = 562, OffsetY = 55 },
+            T{ OffsetX = 58, OffsetY = 0 },
+            T{ OffsetX = 116, OffsetY = 55 },
+            T{ OffsetX = 58, OffsetY = 110 },
+            T{ OffsetX = 0, OffsetY = 55 },
+            T{ OffsetX = 232, OffsetY = 0 },
+            T{ OffsetX = 290, OffsetY = 55 },
+            T{ OffsetX = 232, OffsetY = 110 },
+            T{ OffsetX = 174, OffsetY = 55 },
+            T{ OffsetX = 446, OffsetY = 0 },
+            T{ OffsetX = 504, OffsetY = 55 },
+            T{ OffsetX = 446, OffsetY = 110 },
+            T{ OffsetX = 388, OffsetY = 55 },
+            T{ OffsetX = 620, OffsetY = 0 },
+            T{ OffsetX = 678, OffsetY = 55 },
+            T{ OffsetX = 620, OffsetY = 110 },
+            T{ OffsetX = 562, OffsetY = 55 },
         },
     }
 };

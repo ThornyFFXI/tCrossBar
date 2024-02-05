@@ -10,25 +10,6 @@ local function GetTimeUTC()
     return ashita.memory.read_uint32(ptr + 0x0C);
 end
 
---Item timer is in full seconds not frames.
-local function RecastToString(timer)
-    if (timer < 1) then
-        return nil;
-    end
-
-    if (timer >= 3600) then
-        local h = math.floor(timer / (3600));
-        local m = math.floor(timer / 60);
-        return string.format('%i:%02i', h, m);
-    elseif (timer >= 60) then
-        local m = math.floor(timer / 60);
-        local s = math.fmod(timer, 60);
-        return string.format('%i:%02i', m, s);
-    else
-        return string.format('%i', timer);
-    end
-end
-
 local function GetItemRecast(itemId)
     local containers = T{ 0, 3 };
     local itemCount = 0;
@@ -41,7 +22,7 @@ local function GetItemRecast(itemId)
         end
     end
 
-    return itemCount;
+    return itemCount, -1;
 end
 
 local function GetEquipmentRecast(itemResource)
@@ -83,7 +64,7 @@ local function GetEquipmentRecast(itemResource)
         end
     end
 
-    return itemCount, RecastToString(lowestRecast);
+    return itemCount, lowestRecast;
 end
 
 
@@ -113,18 +94,19 @@ function Updater:Tick()
     local count, recastTimer = self.RecastFunction();
     
     self.State.Available = true;
-    if (bit.band(self.Resource.Flags, 0x800) == 0) then
-        self.State.Cost = tostring(count);
-    else
-        self.State.Cost = '';
-    end
-    self.State.Ready = (count > 0) and (recastTimer == nil);
-    if (recastTimer ~= nil) then
-        self.State.Recast = recastTimer;
-    else
-        self.State.Recast = '';
-    end
     self.State.Skillchain = nil;
+
+    if (bit.band(self.Resource.Flags, 0x800) == 0) then
+        --Non-equippable items..
+        self.State.Cost = count;
+        self.State.Ready = (count > 0);
+        self.State.Recast = -1;
+    else
+        --Equippable(enchanted) items..
+        self.State.Cost = -1;
+        self.State.Ready = ((count > 0) and (recastTimer ~= -1));
+        self.State.Recast = recastTimer;
+    end
 end
 
 return Updater;

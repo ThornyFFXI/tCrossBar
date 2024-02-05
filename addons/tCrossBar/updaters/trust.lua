@@ -36,33 +36,16 @@ local function ItemCost(updater, items)
         end
     end
 
-    return tostring(itemCount), (itemCount > 0);
-end
-
-local function RecastToString(timer)
-    if (timer == 0) then
-        return nil;
-    end
-    if (timer >= 216000) then
-        local h = math.floor(timer / (216000));
-        local m = math.floor(math.fmod(timer, 216000) / 3600);
-        return string.format('%i:%02i', h, m);
-    elseif (timer >= 3600) then
-        local m = math.floor(timer / 3600);
-        local s = math.floor(math.fmod(timer, 3600) / 60);
-        return string.format('%i:%02i', m, s);
-    else
-        if (timer < 60) then
-            return '1';
-        else
-            return string.format('%i', math.floor(timer / 60));
-        end
-    end
+    return itemCount, (itemCount > 0);
 end
 
 local function GetSpellRecast(resource)
     local timer = AshitaCore:GetMemoryManager():GetRecast():GetSpellTimer(resource.Index);
-    return (timer == 0), RecastToString(timer);
+    if (timer == 0) then
+        return true, -1;
+    else
+        return false, timer / 60;
+    end
 end
 
 function Updater:New()
@@ -80,7 +63,7 @@ function Updater:Initialize(element, binding)
         self.CostFunction = ItemCost:bind2(binding.CostOverride);
     else
         self.CostFunction = function()
-            return '', true;
+            return -1, true;
         end
     end
 end
@@ -93,16 +76,12 @@ function Updater:Tick()
     --RecastReady will hold number of charges for charged abilities.
     local recastReady, recastDisplay  = GetSpellRecast(self.Resource);
     local spellKnown                  = player:HasSpell(self.Resource)
-    local spellCostDisplay, costMet   = self:CostFunction();    
+    local spellCostDisplay, costMet   = self:CostFunction();
 
     self.State.Available = spellKnown;
     self.State.Cost = spellCostDisplay;
     self.State.Ready = ((costMet == true) and (recastReady == true));
-    if (recastDisplay ~= nil) then
-        self.State.Recast = recastDisplay;
-    else
-        self.State.Recast = '';
-    end
+    self.State.Recast = recastDisplay;
     self.State.Skillchain = nil;
 end
 

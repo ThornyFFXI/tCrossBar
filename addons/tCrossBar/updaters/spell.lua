@@ -84,7 +84,7 @@ local function ItemCost(updater, items)
         end
     end
 
-    return tostring(itemCount), (itemCount > 0);
+    return itemCount, (itemCount > 0);
 end
 
 local function NinjutsuCost(updater, items)
@@ -100,7 +100,7 @@ local function NinjutsuCost(updater, items)
         end
     end
 
-    return tostring(itemCount), (itemCount > 0);
+    return itemCount, (itemCount > 0);
 end
 
 local function ManaCost(resource)
@@ -148,33 +148,16 @@ local function ManaCost(resource)
         end
     end
 
-    return tostring(cost), (AshitaCore:GetMemoryManager():GetParty():GetMemberMP(0) >= cost);
-end
-
-local function RecastToString(timer)
-    if (timer == 0) then
-        return nil;
-    end
-    if (timer >= 216000) then
-        local h = math.floor(timer / (216000));
-        local m = math.floor(math.fmod(timer, 216000) / 3600);
-        return string.format('%i:%02i', h, m);
-    elseif (timer >= 3600) then
-        local m = math.floor(timer / 3600);
-        local s = math.floor(math.fmod(timer, 3600) / 60);
-        return string.format('%i:%02i', m, s);
-    else
-        if (timer < 60) then
-            return '1';
-        else
-            return string.format('%i', math.floor(timer / 60));
-        end
-    end
+    return cost, (AshitaCore:GetMemoryManager():GetParty():GetMemberMP(0) >= cost);
 end
 
 local function GetSpellRecast(resource)
     local timer = AshitaCore:GetMemoryManager():GetRecast():GetSpellTimer(resource.Index);
-    return (timer == 0), RecastToString(timer);
+    if (timer == 0) then
+        return true, -1;
+    else
+        return false, timer / 60;
+    end
 end
 
 local function CheckAddendum(updater)
@@ -373,7 +356,6 @@ function Updater:Destroy()
 end
 
 function Updater:Tick()
-    --RecastReady will hold number of charges for charged abilities.
     local recastReady, recastDisplay  = GetSpellRecast(self.Resource);
     local spellKnown, spellAvailable  = GetSpellAvailable(self);
     local spellCostDisplay, costMet   = self:CostFunction();
@@ -381,11 +363,7 @@ function Updater:Tick()
     self.State.Available = spellKnown;
     self.State.Cost = spellCostDisplay;
     self.State.Ready = ((costMet == true) and (recastReady == true) and (spellAvailable == true));
-    if (recastDisplay ~= nil) then
-        self.State.Recast = recastDisplay;
-    else
-        self.State.Recast = '';
-    end
+    self.State.Recast = recastDisplay;
     self.State.Skillchain = self:UpdateSkillchain();
 end
 

@@ -37,7 +37,7 @@ local function ItemCost(updater, items)
         end
     end
 
-    return tostring(itemCount), (itemCount > 0);
+    return itemCount, (itemCount > 0);
 end
 
 function Updater:New()
@@ -54,7 +54,7 @@ function Updater:Initialize(element, binding)
         self.CostFunction = ItemCost:bind2(binding.CostOverride);
     else
         self.CostFunction = function()
-            return '', true;
+            return -1, true;
         end
     end
 end
@@ -67,7 +67,7 @@ function Updater:Tick()
     self.State.Available = true;
     self.State.Cost = self:CostFunction();
     self.State.Ready = true;
-    self.State.Recast = '';
+    self.State.Recast = -1;
     self.State.Skillchain = nil;
 end
 
