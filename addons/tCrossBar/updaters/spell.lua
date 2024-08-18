@@ -88,8 +88,15 @@ local function ItemCost(updater, items)
 end
 
 local function NinjutsuCost(updater, items)
+    local specificTool = items[1];
+    local genericTool = items[2];
+    local tools = T{ specificTool };
+    if (player:GetJobData().MainJob == 13) then
+        tools:append(genericTool);
+    end
+
     local itemCount = 0;
-    for _,item in ipairs(items) do
+    for _,item in ipairs(tools) do
         local itemData = inventory:GetItemData(item);
         if (itemData ~= nil) then
             for _,itemEntry in ipairs(itemData.Locations) do
