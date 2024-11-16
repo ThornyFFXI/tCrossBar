@@ -1,4 +1,4 @@
-local Resonation = {
+local Resonation = T{
     None = 0,
     Liquefaction = 1,
     Induration = 2,
@@ -19,7 +19,7 @@ local Resonation = {
     Radiance = 17,
     Umbra = 18
 };
-local names = {
+local names = T{
     'Liquefaction',
     'Induration',
     'Detonation',
@@ -40,7 +40,7 @@ local names = {
     'Darkness',
 };
 
-local possibleSkillchains = {
+local possibleSkillchains = T{
     { Resonation.Light, Resonation.Light, Resonation.Light },
     { Resonation.Light, Resonation.Fragmentation, Resonation.Fusion },
     { Resonation.Light, Resonation.Fusion, Resonation.Fragmentation },
@@ -72,7 +72,7 @@ local possibleSkillchains = {
     { Resonation.Compression, Resonation.Induration, Resonation.Compression }   
 }
 
-local skillchainMessageIds = {
+local skillchainMessageIds = T{
     [288] = Resonation.Light,
     [289] = Resonation.Darkness,
     [290] = Resonation.Gravitation,
@@ -114,8 +114,8 @@ local weaponskillMessageIds = T{
     238  --"${actor} uses ${weapon_skill}.${lb}${target} recovers ${number} HP."
 };
 
-local immanenceMap = {};
-local immanenceResonationMap = {
+local immanenceMap = T{};
+local immanenceResonationMap = T{
     [144] = T{ Resonation.Liquefaction }, --Fire
     [145] = T{ Resonation.Liquefaction }, --Fire II
     [146] = T{ Resonation.Liquefaction }, --Fire III
@@ -157,10 +157,10 @@ local immanenceResonationMap = {
     [503] = T{ Resonation.Compression } --Impact
 };
 
-local playerBuffTable = {};
-local partyBuffTable = {};
-local estimatedBuffMap = {};
-local chainAffinityResonationMap = {
+local playerBuffTable = T{};
+local partyBuffTable = T{};
+local estimatedBuffMap = T{};
+local chainAffinityResonationMap = T{
     [519] = T{ Resonation.Transfixion, Resonation.Scission }, --Screwdriver
     [527] = T{ Resonation.Detonation }, --Smite of Rage
     [529] = T{ Resonation.Liquefaction }, --Bludgeon
@@ -229,7 +229,7 @@ local chainAffinityResonationMap = {
     [892] = T{ Resonation.Transfixion } --Luminohelix II
 };
 
-local weaponskillResonationMap = {
+local weaponskillResonationMap = T{
     [1] = T{ Resonation.Impaction }, --Combo
     [2] = T{ Resonation.Reverberation, Resonation.Impaction }, --Shoulder Tackle
     [3] = T{ Resonation.Compression }, --One Inch Punch
@@ -447,7 +447,7 @@ local weaponskillResonationMap = {
     [239] = T{ Resonation.Light, Resonation.Fusion } --Glory Slash
 };
 
-local resonationMap = {};
+local resonationMap = T{};
 
 local function GetIndexFromId(id)
     local entMgr = AshitaCore:GetMemoryManager():GetEntity();
@@ -549,7 +549,7 @@ local function HandleActionPacket(actionPacket)
                             resonation.WindowOpen = os.clock() + 3.5;
                             resonation.WindowClose = os.clock() + (9.8 - resonation.Depth);
                         else
-                            resonation = {};
+                            resonation = T{};
                             resonation.Depth = 1;
                             resonation.Attributes = T{ skillchain };
                             resonation.WindowOpen = os.clock() + 3.5;
@@ -560,7 +560,7 @@ local function HandleActionPacket(actionPacket)
                     elseif weaponskillMessageIds:contains(action.Message) then
                         local attributes = weaponskillResonationMap[actionPacket.Id];
                         if attributes then
-                            local resonation = {};
+                            local resonation = T{};
                             resonation.Depth = 0;
                             resonation.Attributes = attributes;
                             resonation.WindowOpen = os.clock() + 3.5;
@@ -598,7 +598,7 @@ local function HandleActionPacket(actionPacket)
                             resonation.WindowOpen = os.clock() + 3.5;
                             resonation.WindowClose = os.clock() + (9.8 - resonation.Depth);
                         else
-                            resonation = {};
+                            resonation = T{};
                             resonation.Depth = 1;
                             resonation.Attributes = T{ skillchain };
                             resonation.WindowOpen = os.clock() + 3.5;
@@ -608,7 +608,7 @@ local function HandleActionPacket(actionPacket)
                     else
                         local elements = GetSpellResonation(actionPacket);
                         if elements then
-                            local resonation = {};
+                            local resonation = T{};
                             resonation.Depth = 1;
                             resonation.Attributes = elements;
                             resonation.WindowOpen = os.clock() + 3.5;
@@ -626,7 +626,7 @@ local function HandleActionPacket(actionPacket)
         if (actionPacket.Id == 93) then
             local member = estimatedBuffMap[actionPacket.UserId];
             if (member == nil) then
-                member = {};
+                member = T{};
                 estimatedBuffMap[actionPacket.UserId] = member;
             end
             member[163] = os.clock() + 30;
@@ -635,7 +635,7 @@ local function HandleActionPacket(actionPacket)
         elseif (actionPacket.Id == 94) then
             local member = estimatedBuffMap[actionPacket.UserId];
             if (member == nil) then
-                member = {};
+                member = T{};
                 estimatedBuffMap[actionPacket.UserId] = member;
             end
             member[164] = os.clock() + 30;
@@ -644,7 +644,7 @@ local function HandleActionPacket(actionPacket)
         elseif (actionPacket.Id == 317) then
             local member = estimatedBuffMap[actionPacket.UserId];
             if (member == nil) then
-                member = {};
+                member = T{};
                 estimatedBuffMap[actionPacket.UserId] = member;
             end
             member[170] = os.clock() + 60;
@@ -654,7 +654,7 @@ end
 
 ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function (e)
     if (e.id == 0x00A) then
-        resonationMap = {};
+        resonationMap = T{};
     elseif (e.id == 0x28) then
         local bitData;
         local bitOffset;
@@ -686,7 +686,7 @@ ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function 
             local actionCount = UnpackBits(4);
             target.Actions = T{};
             for j = 1,actionCount do
-                local action = {};
+                local action = T{};
                 action.Reaction = UnpackBits(5);
                 action.Animation = UnpackBits(12);
                 action.SpecialEffect = UnpackBits(7);
@@ -697,7 +697,7 @@ ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function 
 
                 local hasAdditionalEffect = (UnpackBits(1) == 1);
                 if hasAdditionalEffect then
-                    local additionalEffect = {};
+                    local additionalEffect = T{};
                     additionalEffect.Damage = UnpackBits(10);
                     additionalEffect.Param = UnpackBits(17);
                     additionalEffect.Message = UnpackBits(10);
@@ -706,7 +706,7 @@ ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function 
 
                 local hasSpikesEffect = (UnpackBits(1) == 1);
                 if hasSpikesEffect then
-                    local spikesEffect = {};
+                    local spikesEffect = T{};
                     spikesEffect.Damage = UnpackBits(10);
                     spikesEffect.Param = UnpackBits(14);
                     spikesEffect.Message = UnpackBits(10);
@@ -730,7 +730,7 @@ ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function 
             end
         end
     elseif (e.id == 0x076) then
-        partyBuffTable = {};
+        partyBuffTable = T{};
         for i = 0,4 do
             local memberOffset = 0x04 + (0x30 * i) + 1;
             local memberId = struct.unpack('L', e.data, memberOffset);
@@ -758,7 +758,7 @@ ashita.events.register('packet_in', 'skillchain_handleincomingpacket', function 
     end
 end);
 
-local exposed = {};
+local exposed = T{};
 
 function exposed:GetSkillchain(targetIndex, weaponskillId)
     local resonation = resonationMap[targetIndex];
