@@ -32,7 +32,7 @@ function DoubleDisplay:Initialize(layout)
     for group = 0,1 do
         for macro = 1,8 do
             local index = (group * 8) + macro;
-            local newElement = Element:New(GetButtonAlias(group + 1, macro), layout);
+            local newElement = Element:New(GetButtonAlias(group + 1, macro), layout, layout.Elements[index].HotkeyLabel);
             newElement.OffsetX = layout.Elements[index].OffsetX;
             newElement.OffsetY = layout.Elements[index].OffsetY;
             newElement:SetPosition(position);

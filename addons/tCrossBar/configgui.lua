@@ -298,6 +298,8 @@ function exposed:Render()
                     imgui.ShowHelp('Hides UI while the game event system is active.');
                     CheckBox('While Map Open', 'HideWhileMap');
                     imgui.ShowHelp('Hides UI while the map is the topmost menu.');
+                    CheckBox('While Chat Expanded', 'HideWhileChat');
+                    imgui.ShowHelp('Hides UI while the chat window is expanded.');
                     imgui.TextColored(header, 'Combo Behavior');
                     CheckBox('Combo Priority', 'EnablePriority');
                     imgui.ShowHelp('When enabled, pressing LR then R2 will be a seperate set from pressing R2 then L2.  When disabled, order won\'t matter.');

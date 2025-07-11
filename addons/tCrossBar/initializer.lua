@@ -50,6 +50,7 @@ local defaultSettings = T{
     HideWhileZoning = true,
     HideWhileCutscene = true,
     HideWhileMap = true,
+    HideWhileChat = true,
     DefaultSelectTarget = false,
     EnableDoubleTap = true,
     EnablePriority = true,

@@ -113,45 +113,53 @@ end
 local function ManaCost(resource)
     local cost = resource.ManaCost;
 
-    --White magic
-    if (resource.Type == 1) then
-        local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetBuffs();
-        local artsMod, penuryMod;
-        for _,buff in ipairs(buffs) do
-            if (buff == 255) then
-                break;
-            elseif (buff == 358) or (buff == 401) then
-                artsMod = 0.9;
-            elseif (buff == 359) or (buff == 402) then
-                artsMod = 1.2;
-            elseif (buff == 360) then
-                penuryMod = 0.5;
+    local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetBuffs();
+    for _,buff in ipairs(buffs) do
+        if ((buff == 47) or (buff == 229)) then
+            cost = 0;
+            break;
+        end
+    end
+    
+    if cost > 0 then
+        --White magic
+        if (resource.Type == 1) then
+            local artsMod, penuryMod;
+            for _,buff in ipairs(buffs) do
+                if (buff == 255) then
+                    break;
+                elseif (buff == 358) or (buff == 401) then
+                    artsMod = 0.9;
+                elseif (buff == 359) or (buff == 402) then
+                    artsMod = 1.2;
+                elseif (buff == 360) then
+                    penuryMod = 0.5;
+                end
             end
-        end
-        if penuryMod then
-            cost = math.ceil(cost * penuryMod);
-        elseif artsMod then
-            cost = math.ceil(cost * artsMod);
-        end
-    --Black magic
-    elseif (resource.Type == 2) then
-        local buffs = AshitaCore:GetMemoryManager():GetPlayer():GetBuffs();
-        local artsMod, penuryMod;
-        for _,buff in ipairs(buffs) do
-            if (buff == 255) then
-                break;
-            elseif (buff == 358) or (buff == 401) then
-                artsMod = 1.2;
-            elseif (buff == 359) or (buff == 402) then
-                artsMod = 0.9;
-            elseif (buff == 361) then
-                penuryMod = 0.5;
+            if penuryMod then
+                cost = math.ceil(cost * penuryMod);
+            elseif artsMod then
+                cost = math.ceil(cost * artsMod);
             end
-        end
-        if penuryMod then
-            cost = math.ceil(cost * penuryMod);
-        elseif artsMod then
-            cost = math.ceil(cost * artsMod);
+        --Black magic
+        elseif (resource.Type == 2) then
+            local artsMod, penuryMod;
+            for _,buff in ipairs(buffs) do
+                if (buff == 255) then
+                    break;
+                elseif (buff == 358) or (buff == 401) then
+                    artsMod = 1.2;
+                elseif (buff == 359) or (buff == 402) then
+                    artsMod = 0.9;
+                elseif (buff == 361) then
+                    penuryMod = 0.5;
+                end
+            end
+            if penuryMod then
+                cost = math.ceil(cost * penuryMod);
+            elseif artsMod then
+                cost = math.ceil(cost * artsMod);
+            end
         end
     end
 

@@ -44,7 +44,7 @@ end
 
 local Element = {};
 
-function Element:New(hotkey, layout)
+function Element:New(hotkey, layout, hotkeyLabel)
     local o = {};
     setmetatable(o, self);
     self.__index = self;
@@ -53,6 +53,7 @@ function Element:New(hotkey, layout)
         Ready = false,
         Cost = '',
         Hotkey = hotkey,
+        HotkeyLabel = hotkeyLabel or hotkey,
         Name = '',
         Recast = '',
         Skillchain = nil,
@@ -267,6 +268,7 @@ function Element:RenderText(sprite)
             local obj = self.FontObjects[entry];
             if obj then
                 local text = self.State[entry];
+                if entry == 'Hotkey' then text = self.State.HotkeyLabel; end
                 if (type(text) == 'string') and (text ~= '') then
                     obj:set_text(text);
                     local texture, rect = obj:get_texture();
