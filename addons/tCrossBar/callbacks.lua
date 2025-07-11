@@ -51,6 +51,10 @@ local function GetInterfaceHidden()
     return (ashita.memory.read_uint8(ptr + 0xB4) == 1);
 end
 
+local altMaps = T{
+    ['menu    cnqframe'] = true,
+    ['menu    scanlist'] = true,
+};
 local function ShouldHide()
     if (gSettings.HideWhileZoning) then
         if (player:GetLoggedIn() == false) then
@@ -65,7 +69,8 @@ local function ShouldHide()
     end
 
     if (gSettings.HideWhileMap) then
-        if (string.match(GetMenuName(), 'map')) then
+        local activeMenu = GetMenuName();
+        if (string.sub(activeMenu, 1, 11) == 'menu    map') or (altMaps[activeMenu]) then
             return true;
         end
     end
