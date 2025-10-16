@@ -159,6 +159,7 @@ function controller:Tick()
         if (imgui.Begin(string.format('%s v%s Binding', addon.name, addon.version), { true }, ImGuiWindowFlags_AlwaysAutoResize)) then
             imgui.Text('Press any macro combination to bind to it.');
             imgui.Text('Hold binding menu key combination to close this menu.');
+            imgui.End();
         end
     end
 end

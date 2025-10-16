@@ -812,8 +812,8 @@ function exposed:Render()
                     end
                 end
             end
-            imgui.End();
         end
+        imgui.End();
     end
     if (state.IsOpen[1] == false) then
         self.ForceDisplay = nil;

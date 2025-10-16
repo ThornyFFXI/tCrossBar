@@ -133,7 +133,6 @@ local exposed = {};
 function exposed:Render()
     if (state.IsOpen[1]) then
         if (imgui.Begin(string.format('%s v%s Configuration', addon.name, addon.version), state.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
-            imgui.BeginGroup();
             if imgui.BeginTabBar('##tCrossBarConfigTabBar', ImGuiTabBarFlags_NoCloseWithMiddleMouseButton) then
                 if imgui.BeginTabItem('Layouts##tCrossbarConfigLayoutsTab', 0, state.ForceTab and 6 or 4) then
                     state.ForceTab = nil;
@@ -280,7 +279,6 @@ function exposed:Render()
                 end
                 
                 if imgui.BeginTabItem('Behavior##tCrossbarConfigBehaviorTab') then
-                    imgui.BeginGroup();
                     imgui.TextColored(header, 'Macro Elements');
                     CheckBox('Clickable', 'ClickToActivate');
                     imgui.ShowHelp('Makes macros activate when their icon is left clicked.');
