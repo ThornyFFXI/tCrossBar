@@ -697,7 +697,7 @@ function exposed:Render()
                     if (state.ForceTab == 1) then
                         state.ForceTab = nil;
                     end
-                    imgui.BeginChild('BindingChild', { 253, 390 }, true);
+                    imgui.BeginChild('BindingChild', { 253, 390 }, ImGuiChildFlags_Borders);
                     imgui.TextColored(header, 'Combo Type');
                     imgui.Text(GetMacroStateText(state.MacroState));
                     imgui.TextColored(header, 'Macro Button');
@@ -739,7 +739,7 @@ function exposed:Render()
                         width = layout.Icon.Width;
                         height = layout.Icon.Height;
                     end
-                    imgui.BeginChild('AppearanceChild', { 253, 235 + height }, true);
+                    imgui.BeginChild('AppearanceChild', { 253, 235 + height }, ImGuiChildFlags_Borders);
                     imgui.TextColored(header, 'Image');
                     imgui.ShowHelp('While the image file and size are correct, rendering here is done with ImGui instead of GdiPlus and may vary slightly in appearance.');
                     local posY = imgui.GetCursorPosY();
