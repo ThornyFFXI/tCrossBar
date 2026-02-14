@@ -235,6 +235,38 @@ function exposed:Render()
                         end
                     end
                     imgui.ShowHelp('Applies the selected layout to your double display.', true);
+
+                    imgui.TextColored(header, 'Expanded Display (L2²/R2²)');
+                    if (gExpandedDisplay.Valid) then
+                        local button = string.format('%s##MoveToggleExpanded', (state.DragTarget == gExpandedDisplay) and 'End Drag' or 'Allow Drag');
+                        if (imgui.Button(button)) then
+                            if (state.DragTarget == gExpandedDisplay) then
+                                state.DragTarget.AllowDrag = false;
+                                state.DragTarget = nil;
+                            else
+                                if (state.DragTarget ~= nil) then
+                                    state.DragTarget.AllowDrag = false;
+                                end
+                                state.DragTarget = gExpandedDisplay;
+                                state.DragTarget.AllowDrag = true;
+                            end
+                        end
+                        imgui.ShowHelp('Allows you to drag the expanded display.', true);
+                        imgui.SameLine();
+                        if (imgui.Button('Reset##ResetExpanded')) then
+                            local doublePos = gSettings.DoublePosition;
+                            if doublePos and gExpandedDisplay.Layout then
+                                gSettings.ExpandedPosition = { doublePos[1], doublePos[2] - gExpandedDisplay.Layout.Panel.Height - 10 };
+                            else
+                                gSettings.ExpandedPosition = { 0, 0 };
+                            end
+                            gExpandedDisplay:UpdatePosition();
+                            settings.save();
+                        end
+                        imgui.ShowHelp('Resets expanded display position to above the double display.', true);
+                    else
+                        imgui.Text('Uses double layout.  Apply a double layout first.');
+                    end
                     imgui.TextColored(header, 'Layout Files');
                     if (imgui.Button('Refresh')) then
                         GetLayouts();
@@ -274,6 +306,8 @@ function exposed:Render()
                     imgui.ShowHelp('Shows selected palette on single display.');
                     CheckBox('Palette(Double)', 'ShowPalette');
                     imgui.ShowHelp('Shows selected palette on double display.');
+                    CheckBox('Dim Inactive', 'DimInactive');
+                    imgui.ShowHelp('When enabled, inactive crossbars will be dimmed to highlight the active bar.');
                     imgui.EndGroup();
                     imgui.EndTabItem();
                 end
@@ -305,6 +339,8 @@ function exposed:Render()
                     imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
                     CheckBox('Always Show Double', 'ShowDoubleDisplay');
                     imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
+                    CheckBox('Show Expanded (L2²/R2²)', 'ShowExpandedDisplay');
+                    imgui.ShowHelp('When enabled, your double-tap L2 and R2 macros will always be visible as an additional bar.');
                     imgui.TextColored(header, 'Binding Menu');
                     CheckBox('Default To <st>', 'DefaultSelectTarget');
                     imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');

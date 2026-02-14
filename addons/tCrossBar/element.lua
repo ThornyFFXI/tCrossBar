@@ -160,12 +160,14 @@ function Element:UpdateBinding(binding)
     end
 end
 
-function Element:RenderIcon(sprite)
+local vec_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0 });
+function Element:RenderIcon(sprite, overrideColor, overrideScale)
     self.Updater:Tick();
 
     local positionX = self.PositionX;
     local positionY = self.PositionY;
     local layout = self.Layout;
+    local baseColor = overrideColor or d3dwhite;
 
     --Draw frame first..
     if ((self.Binding) or (gSettings.ShowEmpty)) and (gSettings.ShowFrame) then
@@ -173,7 +175,18 @@ function Element:RenderIcon(sprite)
         if component then
             vec_position.x = positionX + layout.Frame.OffsetX;
             vec_position.y = positionY + layout.Frame.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+            if (overrideScale) then
+                vec_scale.x = component.Scale.x * overrideScale;
+                vec_scale.y = component.Scale.y * overrideScale;
+                -- Adjust position to keep centered
+                local widthChange = (component.Rect.right - component.Rect.left) * (vec_scale.x - component.Scale.x);
+                local heightChange = (component.Rect.bottom - component.Rect.top) * (vec_scale.y - component.Scale.y);
+                vec_position.x = vec_position.x - (widthChange / 2);
+                vec_position.y = vec_position.y - (heightChange / 2);
+                sprite:Draw(component.Texture, component.Rect, vec_scale, nil, 0.0, vec_position, baseColor);
+            else
+                sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, baseColor);
+            end
         end
     end
 
@@ -213,13 +226,26 @@ function Element:RenderIcon(sprite)
 
     --Draw icon over frame..
     if icon then
+        local scale = icon.Scale;
         vec_position.x = positionX + layout.Icon.OffsetX;
         vec_position.y = positionY + layout.Icon.OffsetY;
-        local opacity = d3dwhite;
+        
+        if (overrideScale) then
+            vec_scale.x = icon.Scale.x * overrideScale;
+            vec_scale.y = icon.Scale.y * overrideScale;
+            scale = vec_scale;
+            -- Adjust position to keep centered
+            local widthChange = (icon.Rect.right - icon.Rect.left) * (vec_scale.x - icon.Scale.x);
+            local heightChange = (icon.Rect.bottom - icon.Rect.top) * (vec_scale.y - icon.Scale.y);
+            vec_position.x = vec_position.x - (widthChange / 2);
+            vec_position.y = vec_position.y - (heightChange / 2);
+        end
+
+        local opacity = baseColor;
         if (gSettings.ShowFade) and (self.Binding.ShowFade) and (not self.State.Ready) then
             opacity = layout.FadeOpacity;
         end
-        sprite:Draw(icon.Texture, icon.Rect, icon.Scale, nil, 0.0, vec_position, opacity);
+        sprite:Draw(icon.Texture, icon.Rect, scale, nil, 0.0, vec_position, opacity);
     end
 
     --Draw skillchain animation if applicable..
@@ -228,7 +254,17 @@ function Element:RenderIcon(sprite)
         if component then
             vec_position.x = positionX + layout.Icon.OffsetX;
             vec_position.y = positionY + layout.Icon.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+            if (overrideScale) then
+                vec_scale.x = component.Scale.x * overrideScale;
+                vec_scale.y = component.Scale.y * overrideScale;
+                local widthChange = (component.Rect.right - component.Rect.left) * (vec_scale.x - component.Scale.x);
+                local heightChange = (component.Rect.bottom - component.Rect.top) * (vec_scale.y - component.Scale.y);
+                vec_position.x = vec_position.x - (widthChange / 2);
+                vec_position.y = vec_position.y - (heightChange / 2);
+                sprite:Draw(component.Texture, component.Rect, vec_scale, nil, 0.0, vec_position, baseColor);
+            else
+                sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, baseColor);
+            end
         end
     end
 
@@ -238,7 +274,17 @@ function Element:RenderIcon(sprite)
         if component then
             vec_position.x = positionX + layout.Icon.OffsetX;
             vec_position.y = positionY + layout.Icon.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+            if (overrideScale) then
+                vec_scale.x = component.Scale.x * overrideScale;
+                vec_scale.y = component.Scale.y * overrideScale;
+                local widthChange = (component.Rect.right - component.Rect.left) * (vec_scale.x - component.Scale.x);
+                local heightChange = (component.Rect.bottom - component.Rect.top) * (vec_scale.y - component.Scale.y);
+                vec_position.x = vec_position.x - (widthChange / 2);
+                vec_position.y = vec_position.y - (heightChange / 2);
+                sprite:Draw(component.Texture, component.Rect, vec_scale, nil, 0.0, vec_position, baseColor);
+            else
+                sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, baseColor);
+            end
         end
     end
 
@@ -248,7 +294,17 @@ function Element:RenderIcon(sprite)
         if component then
             vec_position.x = positionX + layout.Icon.OffsetX;
             vec_position.y = positionY + layout.Icon.OffsetY;
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, layout.TriggerOpacity);
+            if (overrideScale) then
+                 vec_scale.x = component.Scale.x * overrideScale;
+                vec_scale.y = component.Scale.y * overrideScale;
+                local widthChange = (component.Rect.right - component.Rect.left) * (vec_scale.x - component.Scale.x);
+                local heightChange = (component.Rect.bottom - component.Rect.top) * (vec_scale.y - component.Scale.y);
+                vec_position.x = vec_position.x - (widthChange / 2);
+                vec_position.y = vec_position.y - (heightChange / 2);
+                sprite:Draw(component.Texture, component.Rect, vec_scale, nil, 0.0, vec_position, layout.TriggerOpacity);
+            else
+                sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, layout.TriggerOpacity);
+            end
         end
     end
 end

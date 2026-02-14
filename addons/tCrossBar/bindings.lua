@@ -114,6 +114,10 @@ local function ApplyBindings()
     if (gDoubleDisplay) then
         gDoubleDisplay:UpdateBindings(bindings);
     end
+
+    if (gExpandedDisplay) then
+        gExpandedDisplay:UpdateBindings(bindings);
+    end
 end
 
 local exposed = {};

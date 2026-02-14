@@ -113,26 +113,68 @@ ashita.events.register('d3d_present', 'd3d_present_cb', function ()
     
     renderTarget = gSingleDisplay;
     local macroState = gController:GetMacroState();
+
+    -- Double-tap states (5=LT2, 6=RT2): keep main display visible, highlight expanded
+    if (gSettings.ShowExpandedDisplay) and ((macroState == 5) or (macroState == 6)) then
+        -- Show main bars as if using the corresponding single trigger
+        local mainState = (macroState == 5) and 1 or 2;
+        if (gSettings.LTRTMode == 'FullDouble') then
+            gDoubleDisplay:Render(mainState, false, -1); -- Dim both sides of main display
+            renderTarget = gDoubleDisplay;
+        elseif (gSettings.LTRTMode == 'HalfDouble') then
+            gDoubleDisplay:Render(mainState, true, -1);
+            renderTarget = gDoubleDisplay;
+        else
+            gSingleDisplay:Render(mainState);
+            renderTarget = gSingleDisplay;
+        end
+        -- Render expanded display with highlight on the active double-tap side
+        gExpandedDisplay:Render(macroState);
+        return;
+    end
+
     if (macroState == 0) then
         if (gSettings.ShowDoubleDisplay) then
+            gDoubleDisplay:Render(0, false, 0); -- No dimming
             renderTarget = gDoubleDisplay;
         end
+        if (gSettings.ShowExpandedDisplay) then
+            gExpandedDisplay:Render();
+        end
+        return;
     elseif (macroState < 3) then
         if (gSettings.LTRTMode == 'FullDouble') then
+            gDoubleDisplay:Render(macroState, false, macroState); -- Dim inactive side
             renderTarget = gDoubleDisplay;
         elseif (gSettings.LTRTMode == 'HalfDouble') then
             gDoubleDisplay:Render(macroState, true);
+            if (gSettings.ShowExpandedDisplay) then
+                gExpandedDisplay:Render();
+            end
             return;
         end
+        if (gSettings.ShowExpandedDisplay) then
+            gExpandedDisplay:Render(); -- No highlight for single L2/R2
+        end
+        return;
     end
 
     renderTarget:Render(macroState);
+
+    -- Render expanded display (LT2/RT2) alongside main crossbar when enabled
+    if (gSettings.ShowExpandedDisplay) then
+        gExpandedDisplay:Render();
+    end
 end);
 
 local mouseDown;
 ashita.events.register('mouse', 'mouse_cb', function (e)
     if (renderTarget ~= nil) then
         renderTarget:HandleMouse(e);
+    end
+
+    if (gSettings.ShowExpandedDisplay) and (not e.blocked) then
+        gExpandedDisplay:HandleMouse(e);
     end
 
     if (e.message == 513) then

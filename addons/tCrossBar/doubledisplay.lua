@@ -70,9 +70,11 @@ function DoubleDisplay:SetActivationTimer(macroState, macroIndex)
 end
 
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
+local d3ddim = d3d8.D3DCOLOR_ARGB(100, 255, 255, 255);
 local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
-function DoubleDisplay:Render(macroState, forceSingle)
+local highlightScale = 1.25;
+function DoubleDisplay:Render(macroState, forceSingle, dimState)
     if (self.Valid == false) then
         return;
     end
@@ -81,6 +83,26 @@ function DoubleDisplay:Render(macroState, forceSingle)
     local sprite = self.Sprite;
     sprite:Begin();
 
+    -- Determine opacity and scale for each side based on dimState
+    -- dimState: 0=All Full, 1=LT Full/RT Dim, 2=RT Full/LT Dim, -1=All Dim
+    local leftOpacity = d3dwhite;
+    local rightOpacity = d3dwhite;
+    local leftScale = nil;
+    local rightScale = nil;
+    
+    if (dimState == 1) then
+        if (gSettings.DimInactive) then rightOpacity = d3ddim; end
+        leftScale = highlightScale;
+    elseif (dimState == 2) then
+        if (gSettings.DimInactive) then leftOpacity = d3ddim; end
+        rightScale = highlightScale;
+    elseif (dimState == -1) then
+        if (gSettings.DimInactive) then
+            leftOpacity = d3ddim;
+            rightOpacity = d3ddim;
+        end
+    end
+
     for _,object in ipairs(self.Layout.FixedObjects) do
         local component = self.Layout.Textures[object.Texture];
         vec_position.x = pos[1] + object.OffsetX;
@@ -88,24 +110,30 @@ function DoubleDisplay:Render(macroState, forceSingle)
 
         local associatedState = object.AssociatedState;
         if (not forceSingle) or (associatedState == nil) or (associatedState == macroState) then
-            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, d3dwhite);
+            -- Determine if object belongs to Left or Right side for dimming
+            -- Heuristic: AssociatedState 1=Left, 2=Right. If nil, check OffsetX vs center
+            local isLeft = (associatedState == 1) or (associatedState == nil and object.OffsetX < self.Layout.Panel.Width / 2);
+            local objColor = isLeft and leftOpacity or rightOpacity;
+            -- Scale isn't applied to fixed objects by default in this logic, only elements. 
+            -- But if we wanted to scale the frame/dpad? Maybe too complex layout-wise. 
+            sprite:Draw(component.Texture, component.Rect, component.Scale, nil, 0.0, vec_position, objColor);
         end
     end
 
     local renderElements = T{};
     if (macroState == 1) or (not forceSingle) then
         for i = 1,8 do
-            renderElements:append(self.Elements[i]);
+            renderElements:append({ Element = self.Elements[i], Opacity = leftOpacity, Scale = leftScale });
         end
     end
     if (macroState == 2) or (not forceSingle) then
         for i = 9,16 do
-            renderElements:append(self.Elements[i]);
+            renderElements:append({ Element = self.Elements[i], Opacity = rightOpacity, Scale = rightScale });
         end  
     end
 
-    for _,element in ipairs(renderElements) do
-        element:RenderIcon(sprite);
+    for _,item in ipairs(renderElements) do
+        item.Element:RenderIcon(sprite, item.Opacity, item.Scale);
     end
 
     local showPalette = gSettings.ShowPalette;
@@ -132,8 +160,11 @@ function DoubleDisplay:Render(macroState, forceSingle)
         end
     end
     
-    for _,element in ipairs(renderElements) do
-        element:RenderText(sprite);
+    for _,item in ipairs(renderElements) do
+        -- Only render text if not dimmed (optional, user didn't specify, but safer for cleaner look)
+        if (item.Opacity == d3dwhite) then
+            item.Element:RenderText(sprite);
+        end
     end
 
     if (self.AllowDrag) then
