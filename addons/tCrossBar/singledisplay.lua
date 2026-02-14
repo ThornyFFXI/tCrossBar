@@ -80,6 +80,7 @@ function SingleDisplay:Activate(macroState, macroIndex)
     if element then
         element:Activate();
         gDoubleDisplay:SetActivationTimer(macroState, macroIndex);
+        gExpandedDisplay:SetActivationTimer(macroState, macroIndex);
     end
 end
 

@@ -7,6 +7,7 @@ gConfigGUI       = require('configgui');
 gController      = require('controller');
 gSingleDisplay   = require('singledisplay');
 gDoubleDisplay   = require('doubledisplay');
+gExpandedDisplay  = require('expandeddisplay');
 settings         = require('settings');
 
 local d3d8       = require('d3d8');
@@ -52,9 +53,11 @@ local defaultSettings = T{
     HideWhileMap = true,
     HideWhileChat = true,
     DefaultSelectTarget = false,
+    DimInactive = true,
     EnableDoubleTap = true,
     EnablePriority = true,
     ShowDoubleDisplay = true,
+    ShowExpandedDisplay = false,
     LTRTMode = 'FullDouble',
     SwapToSingleDisplay = false,
     AllowInventoryPassthrough = true,
@@ -171,6 +174,7 @@ end
 function Initializer:ApplyLayout()
     gSingleDisplay:Destroy();
     gDoubleDisplay:Destroy();
+    gExpandedDisplay:Destroy();
 
     local singleLayout = LoadFile_s(GetResourcePath('layouts/' .. gSettings.SingleLayout));
     if singleLayout then
@@ -196,6 +200,24 @@ function Initializer:ApplyLayout()
         gDoubleDisplay:Initialize(doubleLayout.Double);
     else
         Error('Failed to load double layout.  Please enter "/tc" to open the menu and select a valid layout.');
+    end
+
+    -- Initialize expanded display using the same double layout
+    local expandedLayout = LoadFile_s(GetResourcePath('layouts/' .. gSettings.DoubleLayout));
+    if expandedLayout then
+        PrepareLayout(expandedLayout.Double, gSettings.DoubleScale);
+        local position = gSettings.ExpandedPosition;
+        if position == nil then
+            -- Position above the double display by default
+            local doublePos = gSettings.DoublePosition;
+            if doublePos then
+                gSettings.ExpandedPosition = { doublePos[1], doublePos[2] - expandedLayout.Double.Panel.Height - 10 };
+            else
+                gSettings.ExpandedPosition = GetDefaultPosition(expandedLayout.Double);
+            end
+            settings.save();
+        end
+        gExpandedDisplay:Initialize(expandedLayout.Double);
     end
     
     gTextureCache:Clear();
