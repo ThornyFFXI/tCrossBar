@@ -1,4 +1,5 @@
 local renderTarget;
+local isHidden = false;
 local player = require('state.player');
 local pGameMenu = ashita.memory.find('FFXiMain.dll', 0, "8B480C85C974??8B510885D274??3B05", 16, 0);
 local pEventSystem = ashita.memory.find('FFXiMain.dll', 0, "A0????????84C0741AA1????????85C0741166A1????????663B05????????0F94C0C3", 0, 0);
@@ -55,6 +56,64 @@ local altMaps = T{
     ['menu    cnqframe'] = true,
     ['menu    scanlist'] = true,
 };
+local mainMenuPrefixes = T{
+    'menu    status',
+    'menu    equip',
+    'menu    item',
+    'menu    magic',
+    'menu    ability',
+    'menu    config',
+    'menu    mission',
+    'menu    quest',
+    'menu    keyitem',
+    'menu    bazaar',
+    'menu    delivery',
+    'menu    comment',
+    'menu    profile',
+    'menu    jobpoint',
+    'menu    unity',
+    'menu    master',
+    'menu    moghouse',
+    'menu    merit',
+    'menu    recruit',
+    'menu    friendlist',
+    'menu    linkshell',
+    'menu    party',
+    'menu    trade',
+    'menu    shop',
+    'menu    send',
+    'menu    recv',
+};
+
+local function IsEngaged()
+    local party = AshitaCore:GetMemoryManager():GetParty();
+    if (party == nil) then
+        return false;
+    end
+    local playerIndex = party:GetMemberTargetIndex(0);
+    if (playerIndex == 0) then
+        return false;
+    end
+    local entity = AshitaCore:GetMemoryManager():GetEntity();
+    if (entity == nil) then
+        return false;
+    end
+    return (entity:GetStatus(playerIndex) == 1);
+end
+
+local function IsMainMenuOpen()
+    local menuName = GetMenuName();
+    if (menuName == nil) or (menuName == '') then
+        return false;
+    end
+    for _, prefix in ipairs(mainMenuPrefixes) do
+        if (string.sub(menuName, 1, #prefix) == prefix) then
+            return true;
+        end
+    end
+    return false;
+end
+
 local function ShouldHide()
     if (gSettings.HideWhileZoning) then
         if (player:GetLoggedIn() == false) then
@@ -84,6 +143,19 @@ local function ShouldHide()
     if (GetInterfaceHidden()) then
         return true;
     end
+
+    if (gSettings.HideWhileMainMenu) then
+        if (IsMainMenuOpen()) then
+            return true;
+        end
+    end
+
+    if (gSettings.HideWhenInactive) then
+        local macroState = gController:GetMacroState();
+        if (macroState == 0) and (IsEngaged() == false) then
+            return true;
+        end
+    end
     
     return false;
 end
@@ -109,8 +181,11 @@ player:UpdateBLUSpells();
     end
 
     if (ShouldHide()) then
+        isHidden = true;
         return;
     end
+    
+    isHidden = false;
     
     renderTarget = gSingleDisplay;
     local macroState = gController:GetMacroState();
@@ -170,6 +245,10 @@ end);
 
 local mouseDown;
 ashita.events.register('mouse', 'mouse_cb', function (e)
+    if (isHidden) then
+        return;
+    end
+
     if (renderTarget ~= nil) then
         renderTarget:HandleMouse(e);
     end
