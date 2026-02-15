@@ -1,0 +1,58 @@
+# Project Name
+
+## tCrossBar
+
+## Description
+tCrossBar is an Ashita addon (Final Fantasy XI) that provides a configurable cross-bar / controller UI and input-mapping layer. It exposes controller layouts, per-class ability/spell/weapon-skill mappings, and a lightweight GUI for binding and configuring inputs. The addon supports multiple controller profiles and dynamic layout switching based on player state.
+
+## Tech Stack
+- Language: Lua (targeted for Ashita/FFXI addon environment)
+- Runtime: Ashita (in-game addon host)
+- UI/Fonts: bundled `gdifonts` helpers
+
+## Architecture
+The project is organized to separate UI, controller input, configuration, and game-state updates.
+
+- Core:
+	- `tCrossBar.lua`: addon entry-point and main loop
+	- `initializer.lua`: initialization and registration with Ashita
+	- `interface.lua`: glue between game events and addon components
+
+- Controller & Input:
+	- `controller.lua`: controller detection and mapping
+	- `bindings.lua`: persistent binding storage and lookup
+	- `bindinggui.lua`, `configgui.lua`: in-game configuration UIs
+
+- UI Elements / Displays:
+	- `element.lua`: base UI element definitions
+	- `singledisplay.lua`, `doubledisplay.lua`, `expandeddisplay.lua`: visual layouts
+	- `texturecache.lua`: texture/font caching utilities
+
+- Game Integration:
+	- `callbacks.lua`, `commands.lua`: Ashita callbacks and slash commands
+	- `updaters/`: per-type updaters (ability, spell, item, trust, weaponskill, etc.)
+	- `state/`: tracked game state (player, inventory, skillchain)
+
+- Resources:
+	- `resources/`: controller profiles, layouts, ability/spell/weapon-skill metadata
+	- `gdifonts/`: font and encoding helpers
+
+## Installation
+1. Copy the `tCrossBar` folder into your Ashita `addons` directory.
+2. Start the game and load the addon with your Ashita command (e.g., `/addon load tCrossBar`).
+3. Configure bindings in-game via the configuration GUI or by editing resource layout files.
+
+## Development
+- Lua style: keep code simple and modular; follow existing project conventions.
+- To test: run Ashita + FFXI, load the addon, and exercise the UI and controller mappings.
+- The project is Windows-friendly; development edits can be reloaded in-game with the addon reload command.
+
+## Contributing
+- Open issues and PRs for bug reports and feature requests.
+- Prefer small, focused changes and include usage notes for new features.
+
+## License
+See the repository `LICENSE` file for licensing details.
+
+## Contact / Notes
+For questions about controller mappings or layout creation, inspect `resources/layouts` and `resources/controllers` for examples and supported profiles.

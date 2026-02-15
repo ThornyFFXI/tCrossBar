@@ -1,6 +1,7 @@
 local header = { 1.0, 0.75, 0.55, 1.0 };
 local imgui = require('imgui');
 local scaling = require('scaling');
+local gPaletteManager = require('palette_manager');
 local state = {
     IsOpen = { false }
 };
@@ -132,7 +133,7 @@ local exposed = {};
 
 function exposed:Render()
     if (state.IsOpen[1]) then
-        if (imgui.Begin(string.format('%s v%s Configuration', addon.name, addon.version), state.IsOpen, ImGuiWindowFlags_AlwaysAutoResize)) then
+        if (imgui.Begin(string.format('%s v%s Configuration', addon.name, addon.version), state.IsOpen)) then
             if imgui.BeginTabBar('##tCrossBarConfigTabBar', ImGuiTabBarFlags_NoCloseWithMiddleMouseButton) then
                 if imgui.BeginTabItem('Layouts##tCrossbarConfigLayoutsTab', 0, state.ForceTab and 6 or 4) then
                     state.ForceTab = nil;
@@ -412,6 +413,11 @@ function exposed:Render()
                     imgui.EndTabItem();
                 end
                 
+                if imgui.BeginTabItem('Palettes##tCrossbarPalettesTab') then
+                    gPaletteManager:Render();
+                    imgui.EndTabItem();
+                end
+                
                 imgui.EndTabBar();
             end
             imgui.End();
@@ -435,6 +441,7 @@ function exposed:Show()
     state.ForceTab = true;
     state.IsOpen = { true };
     state.DragTarget = nil;
+    gPaletteManager:Show();
 end
 
 return exposed;

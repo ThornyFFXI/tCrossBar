@@ -398,4 +398,19 @@ function exposed:Update()
     ApplyBindings();
 end
 
+function exposed:Save()
+    WriteJob();
+end
+
+setmetatable(exposed, {
+    __index = function(_, k)
+        return bindings[k]
+    end,
+    __newindex = function(_, k, v)
+        if k == 'ActivePalette' or k == 'ActivePaletteIndex' or k == 'LastPaletteIndex' then
+            bindings[k] = v
+        end
+    end
+})
+
 return exposed;
