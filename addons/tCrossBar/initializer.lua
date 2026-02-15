@@ -3,6 +3,7 @@ require('helpers');
 gTextureCache    = require('texturecache');
 gBindings        = require('bindings');
 gBindingGUI      = require('bindinggui');
+gMacroEditor     = require('macroeditor');
 gConfigGUI       = require('configgui');
 gController      = require('controller');
 gSingleDisplay   = require('singledisplay');

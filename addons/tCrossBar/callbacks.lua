@@ -89,10 +89,11 @@ local function ShouldHide()
 end
 
 ashita.events.register('d3d_present', 'd3d_present_cb', function ()
-    player:UpdateBLUSpells();
+player:UpdateBLUSpells();
     gController:Tick();    
     gConfigGUI:Render();
     gBindingGUI:Render();
+    gMacroEditor:Render();
 
     renderTarget = nil;
     if (gConfigGUI.ForceDisplay) then

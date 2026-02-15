@@ -112,21 +112,14 @@ local macroComboBinds = {
     [6] = 'RT2'
 };
 
-local macroButtons = {
-    'Top',
-    'Right',
-    'Bottom',
-    'Left'
-};
-
 local function GetMacroStateFromHotkey(hotkey)
     local parts = hotkey:split(':');
     if (#parts ~= 2) then
-        return 1, 'Top';
+        return 1, 1;
     end
     
     local combo = parts[1];
-    local button = parts[2];
+    local button = tonumber(parts[2]) or 1;
     
     local macroState = 1;
     for i, cb in ipairs(macroComboBinds) do
@@ -136,15 +129,7 @@ local function GetMacroStateFromHotkey(hotkey)
         end
     end
     
-    local macroButton = 'Top';
-    for _, mb in ipairs(macroButtons) do
-        if (mb == button) then
-            macroButton = mb;
-            break;
-        end
-    end
-    
-    return macroState, macroButton;
+    return macroState, button;
 end
 
 local exposed = {};
@@ -259,77 +244,64 @@ function exposed:Render()
     local currentPalette = palettes and palettes[state.SelectedPaletteIndex];
     if (currentPalette) then
         imgui.TextColored(header, string.format('Macros in "%s"', currentPalette.Name));
-        imgui.BeginChild('MacroListChild', { -1, panelHeight - 100 }, ImGuiChildFlags_Borders);
+        imgui.BeginChild('MacroListChild', { -1, panelHeight }, ImGuiChildFlags_Borders);
         
-        if (imgui.BeginTable('MacrosTable', 4, bit.bor(ImGuiTableFlags_Borders, ImGuiTableFlags_Resizable, ImGuiTableFlags_ScrollY, ImGuiTableFlags_RowBg))) then
-            imgui.TableSetupColumn('Hotkey', ImGuiTableColumnFlags_WidthFixed, 90);
-            imgui.TableSetupColumn('Type', ImGuiTableColumnFlags_WidthFixed, 80);
+        if (imgui.BeginTable('MacrosTable', 5, bit.bor(ImGuiTableFlags_Borders, ImGuiTableFlags_Resizable, ImGuiTableFlags_ScrollY, ImGuiTableFlags_RowBg))) then
+            imgui.TableSetupColumn('Hotkey', ImGuiTableColumnFlags_WidthFixed, 80);
+            imgui.TableSetupColumn('Type', ImGuiTableColumnFlags_WidthFixed, 70);
             imgui.TableSetupColumn('Label', ImGuiTableColumnFlags_WidthStretch);
+            imgui.TableSetupColumn('Status', ImGuiTableColumnFlags_WidthFixed, 55);
             imgui.TableSetupColumn('Actions', ImGuiTableColumnFlags_WidthFixed, 70);
             imgui.TableHeadersRow();
             
-            local bindings = currentPalette.Bindings;
-            local sortedHotkeys = {};
-            for hotkey, _ in pairs(bindings) do
-                table.insert(sortedHotkeys, hotkey);
-            end
-            table.sort(sortedHotkeys);
+            local bindings = currentPalette.Bindings or {};
             
-            for _, hotkey in ipairs(sortedHotkeys) do
-                local binding = bindings[hotkey];
-                if (binding) then
+            for macroState = 1, 6 do
+                for macroButton = 1, 8 do
+                    local hotkey = string.format('%s:%d', macroComboBinds[macroState], macroButton);
+                    local binding = bindings[hotkey];
+                    local isUsed = (binding ~= nil);
+                    
                     imgui.TableNextRow();
                     imgui.TableSetColumnIndex(0);
                     imgui.Text(hotkey);
                     imgui.TableSetColumnIndex(1);
-                    imgui.Text(binding.ActionType or 'Unknown');
+                    imgui.Text(isUsed and (binding.ActionType or 'Unknown') or '-');
                     imgui.TableSetColumnIndex(2);
-                    imgui.Text(binding.Label or '');
+                    imgui.Text(isUsed and (binding.Label or '') or '-');
                     imgui.TableSetColumnIndex(3);
-                    
-                    if (imgui.Button(string.format('Edit##Edit_%s', hotkey))) then
-                        local macroState, macroButton = GetMacroStateFromHotkey(hotkey);
-                        gBindingGUI:Show(macroState, macroButton);
+                    if isUsed then
+                        imgui.TextColored(activeHeader, 'Used');
+                    else
+                        imgui.TextColored({ 0.6, 0.6, 0.6, 1.0 }, 'Unused');
                     end
-                    imgui.SameLine();
-                    if (imgui.Button(string.format('X##Delete_%s', hotkey))) then
-                        DeleteMacro(hotkey);
+                    imgui.TableSetColumnIndex(4);
+                    
+                    if isUsed then
+                        if (imgui.Button(string.format('Edit##Edit_%s', hotkey))) then
+                            gMacroEditor:Show(hotkey, binding, function(hk, newBinding)
+                                currentPalette.Bindings[hk] = newBinding;
+                                gBindings:Save();
+                                gBindings:Update();
+                            end);
+                        end
+                        imgui.SameLine();
+                        if (imgui.Button(string.format('X##Delete_%s', hotkey))) then
+                            DeleteMacro(hotkey);
+                        end
+                    else
+                        if (imgui.Button(string.format('Add##Add_%s', hotkey))) then
+                            gMacroEditor:Show(hotkey, nil, function(hk, newBinding)
+                                currentPalette.Bindings[hk] = newBinding;
+                                gBindings:Save();
+                                gBindings:Update();
+                            end);
+                        end
                     end
                 end
             end
             
             imgui.EndTable();
-        end
-        
-        imgui.EndChild();
-        
-        imgui.TextColored(header, 'Available Slots');
-        imgui.BeginChild('AvailableSlotsChild', { -1, 80 }, ImGuiChildFlags_Borders);
-        
-        local usedSlots = {};
-        for hotkey, _ in pairs(currentPalette.Bindings or {}) do
-            usedSlots[hotkey] = true;
-        end
-        
-        local slotIndex = 1;
-        for macroState = 1, 6 do
-            for macroButtonIdx = 1, 4 do
-                local hotkey = string.format('%s:%s', macroComboBinds[macroState], macroButtons[macroButtonIdx]);
-                if (not usedSlots[hotkey]) then
-                    if (imgui.Button(string.format('Add##Add_%s', hotkey))) then
-                        gBindingGUI:Show(macroState, macroButtons[macroButtonIdx]);
-                    end
-                    imgui.SameLine();
-                    imgui.Text(string.format('%s:%s', macroComboBinds[macroState], macroButtons[macroButtonIdx]));
-                    slotIndex = slotIndex + 1;
-                    if (slotIndex > 6) then
-                        break;
-                    end
-                end
-            end
-            if (slotIndex > 6) then
-                break;
-            end
         end
         
         imgui.EndChild();
