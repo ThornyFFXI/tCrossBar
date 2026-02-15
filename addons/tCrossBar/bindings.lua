@@ -222,6 +222,36 @@ function exposed:GetDisplayText()
     end
 end
 
+function exposed:GetPreviousPaletteName()
+    local paletteCount = #bindings.JobBindings.Palettes;
+    if (paletteCount <= 1) then
+        return;
+    end
+    local prevIndex = bindings.ActivePaletteIndex - 1;
+    if (prevIndex < 1) then
+        prevIndex = paletteCount;
+    end
+    local prevPalette = bindings.JobBindings.Palettes[prevIndex];
+    if (prevPalette ~= nil) then
+        return prevPalette.Name;
+    end
+end
+
+function exposed:GetNextPaletteName()
+    local paletteCount = #bindings.JobBindings.Palettes;
+    if (paletteCount <= 1) then
+        return;
+    end
+    local nextIndex = bindings.ActivePaletteIndex + 1;
+    if (nextIndex > paletteCount) then
+        nextIndex = 1;
+    end
+    local nextPalette = bindings.JobBindings.Palettes[nextIndex];
+    if (nextPalette ~= nil) then
+        return nextPalette.Name;
+    end
+end
+
 function exposed:PreviousPalette()
     local paletteCount = #bindings.JobBindings.Palettes;
     if (paletteCount == 1) then

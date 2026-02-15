@@ -54,6 +54,18 @@ function DoubleDisplay:Initialize(layout)
     obj.OffsetX = self.Layout.Palette.OffsetX;
     obj.OffsetY = self.Layout.Palette.OffsetY;
     self.PaletteDisplay = obj;
+    if (self.Layout.PalettePrev ~= nil) then
+        local prevObj = gdi:create_object(self.Layout.PalettePrev, true);
+        prevObj.OffsetX = self.Layout.PalettePrev.OffsetX;
+        prevObj.OffsetY = self.Layout.PalettePrev.OffsetY;
+        self.PalettePrevDisplay = prevObj;
+    end
+    if (self.Layout.PaletteNext ~= nil) then
+        local nextObj = gdi:create_object(self.Layout.PaletteNext, true);
+        nextObj.OffsetX = self.Layout.PaletteNext.OffsetX;
+        nextObj.OffsetY = self.Layout.PaletteNext.OffsetY;
+        self.PaletteNextDisplay = nextObj;
+    end
     self:UpdateBindings(gBindings:GetFormattedBindings());
 end
 
@@ -157,6 +169,42 @@ function DoubleDisplay:Render(macroState, forceSingle, dimState)
             end
             vec_position.y = obj.OffsetY + pos[2];
             sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+        end
+        local prevObj = self.PalettePrevDisplay;
+        if prevObj then
+            local prevName = gBindings:GetPreviousPaletteName();
+            if prevName then
+                prevObj:set_text(prevName);
+                local texture, rect = prevObj:get_texture();
+                local posX = prevObj.OffsetX + pos[1];
+                if (prevObj.settings.font_alignment == 1) then
+                    vec_position.x = posX - (rect.right / 2);
+                elseif (prevObj.settings.font_alignment == 2) then
+                    vec_position.x = posX - rect.right;
+                else
+                    vec_position.x = posX;
+                end
+                vec_position.y = prevObj.OffsetY + pos[2];
+                sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+            end
+        end
+        local nextObj = self.PaletteNextDisplay;
+        if nextObj then
+            local nextName = gBindings:GetNextPaletteName();
+            if nextName then
+                nextObj:set_text(nextName);
+                local texture, rect = nextObj:get_texture();
+                local posX = nextObj.OffsetX + pos[1];
+                if (nextObj.settings.font_alignment == 1) then
+                    vec_position.x = posX - (rect.right / 2);
+                elseif (nextObj.settings.font_alignment == 2) then
+                    vec_position.x = posX - rect.right;
+                else
+                    vec_position.x = posX;
+                end
+                vec_position.y = nextObj.OffsetY + pos[2];
+                sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+            end
         end
     end
     
