@@ -99,6 +99,28 @@ local textOrder = T { 'Hotkey', 'Cost', 'Recast', 'Name' };
 local d3dwhite = d3d8.D3DCOLOR_ARGB(255, 255, 255, 255);
 local vec_position = ffi.new('D3DXVECTOR2', { 0, 0, });
 local vec_font_scale = ffi.new('D3DXVECTOR2', { 1.0, 1.0, });
+
+local function CreateLargeRecastObject(layout)
+    local iconData = layout.Icon;
+    local largeRecastSettings = {
+        box_height = 0,
+        box_width = 0,
+        font_alignment = 1,
+        font_color = 0xFFFFFFFF,
+        font_family = 'Arial',
+        font_flags = 1,
+        font_height = math.max(18, math.floor(math.min(iconData.Width, iconData.Height) * 0.6)),
+        gradient_color = 0x00000000,
+        gradient_style = 0,
+        outline_color = 0xFF000000,
+        outline_width = 2,
+    };
+    local obj = gdi:create_object(largeRecastSettings, true);
+    obj.OffsetX = iconData.OffsetX + (iconData.Width / 2);
+    obj.OffsetY = iconData.OffsetY + (iconData.Height / 2);
+    return obj;
+end
+
 function Element:Initialize()
     self.FontObjects = T{};
     for _,entry in ipairs(textOrder) do
@@ -110,6 +132,7 @@ function Element:Initialize()
             self.FontObjects[entry] = obj;
         end
     end
+    self.LargeRecastObject = CreateLargeRecastObject(self.Layout);
 end
 
 function Element:SetPosition(position)
@@ -317,28 +340,43 @@ function Element:RenderText(sprite)
     local positionX = self.PositionX;
     local positionY = self.PositionY;
     
-    --Draw text elements..
+    local showLargeRecast = gSettings.LargeRecast and gSettings.ShowRecast and self.Binding.ShowRecast;
+    
     for _,entry in ipairs(textOrder) do
         local setting = 'Show' .. entry;
         if (gSettings[setting]) and (self.Binding[setting]) then
-            local obj = self.FontObjects[entry];
-            if obj then
-                local text = self.State[entry];
-                if entry == 'Hotkey' then text = self.State.HotkeyLabel; end
+            if (entry == 'Recast') and showLargeRecast then
+                local text = self.State.Recast;
                 if (type(text) == 'string') and (text ~= '') then
+                    local obj = self.LargeRecastObject;
                     obj:set_text(text);
                     local texture, rect = obj:get_texture();
                     if (texture ~= nil) then
-                        local posX = obj.OffsetX + positionX;
-                        if (obj.settings.font_alignment == 1) then
-                            vec_position.x = posX - (rect.right / 2);
-                        elseif (obj.settings.font_alignment == 2) then
-                            vec_position.x = posX - rect.right;
-                        else
-                            vec_position.x = posX;;
-                        end
-                        vec_position.y = obj.OffsetY + positionY;
+                        vec_position.x = obj.OffsetX + positionX - (rect.right / 2);
+                        vec_position.y = obj.OffsetY + positionY - (rect.bottom / 2);
                         sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+                    end
+                end
+            else
+                local obj = self.FontObjects[entry];
+                if obj then
+                    local text = self.State[entry];
+                    if entry == 'Hotkey' then text = self.State.HotkeyLabel; end
+                    if (type(text) == 'string') and (text ~= '') then
+                        obj:set_text(text);
+                        local texture, rect = obj:get_texture();
+                        if (texture ~= nil) then
+                            local posX = obj.OffsetX + positionX;
+                            if (obj.settings.font_alignment == 1) then
+                                vec_position.x = posX - (rect.right / 2);
+                            elseif (obj.settings.font_alignment == 2) then
+                                vec_position.x = posX - rect.right;
+                            else
+                                vec_position.x = posX;;
+                            end
+                            vec_position.y = obj.OffsetY + positionY;
+                            sprite:Draw(texture, rect, vec_font_scale, nil, 0.0, vec_position, d3dwhite);
+                        end
                     end
                 end
             end

@@ -297,8 +297,10 @@ function exposed:Render()
                     imgui.ShowHelp('Displays a X over actions you don\'t currently know.');
                     CheckBox('Fade', 'ShowFade');
                     imgui.ShowHelp('Fades the icon for actions where cooldown is not 0 or cost is not met.');
-                    CheckBox('Recast', 'ShowRecast');
+CheckBox('Recast', 'ShowRecast');
                     imgui.ShowHelp('Shows action recast timers.');
+                    CheckBox('Large Recast', 'LargeRecast');
+                    imgui.ShowHelp('Displays recast timers as large centered numbers instead of small corner numbers.');
                     CheckBox('Hotkey', 'ShowHotkey');
                     imgui.ShowHelp('Shows hotkey labels.');
                     CheckBox('Name', 'ShowName');
