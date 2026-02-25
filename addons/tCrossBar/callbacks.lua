@@ -56,6 +56,10 @@ local altMaps = T{
     ['menu    scanlist'] = true,
 };
 local function ShouldHide()
+    if gToggleHide then
+        return true;
+    end
+    
     if (gSettings.HideWhileZoning) then
         if (player:GetLoggedIn() == false) then
             return true;

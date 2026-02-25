@@ -29,4 +29,10 @@ ashita.events.register('command', 'command_cb', function (e)
         gBindings:HandleCommand(args);
         return;
     end
+    
+    if (#args > 1) and (string.lower(args[2]) == 'hide') then
+        gToggleHide = not gToggleHide;
+        Message(string.format("Display is now $H%s$R.", gToggleHide and "hidden" or "visible"));
+        return;
+    end
 end);
