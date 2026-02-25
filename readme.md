@@ -53,6 +53,10 @@ Change to previous palette.
 **/tc palette last**
 Change to the last palette to be active prior to the current one.
 
+## Other Commands
+**/tc hide**
+Toggles hiding of UI on demand. Will not prevent activation of macros.
+
 ## Custom Icons
 The binding menu allows you to enter an image path to use your own images for any ability you want.  If you want to replace existing icons, or add new icons, you should do so by adding them to the directory:<br>
 **Ashita/config/addons/tCrosstBar/resources**<br>

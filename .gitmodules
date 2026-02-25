@@ -1,3 +1,3 @@
 [submodule "gdifonts"]
-	path = addons/tCrossBar/gdifonts
-	url = https://github.com/ThornyFFXI/gdifonts
+	path = gdifonts
+	url = https://github.com/ThornyFFXI/gdifonts.git
