@@ -1,6 +1,7 @@
 --Initialize Globals..
 require('helpers');
 gTextureCache    = require('texturecache');
+gMacro           = require('macro')
 gBindings        = require('bindings');
 gBindingGUI      = require('bindinggui');
 gConfigGUI       = require('configgui');
@@ -49,15 +50,18 @@ local defaultSettings = T{
     ShowPalette = true,
     ShowSinglePalette = false,
 
-    --Behavior tab..
+    --Macros tab..
     ClickToActivate = true,
+    MacroInterrupt = false,
+    EnablePriority = true,
+    EnableDoubleTap = true,
+    DefaultSelectTarget = false,
+
+    --Behavior tab..
     HideWhileZoning = true,
     HideWhileCutscene = true,
     HideWhileMap = true,
     HideWhileChat = true,
-    DefaultSelectTarget = false,
-    EnableDoubleTap = true,
-    EnablePriority = true,
     ShowDoubleDisplay = true,
     LTRTMode = 'FullDouble',
     SwapToSingleDisplay = false,

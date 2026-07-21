@@ -1,5 +1,4 @@
 local d3d8     = require('d3d8');
-local encoding = require('gdifonts.encoding');
 local ffi      = require('ffi');
 local gdi      = require('gdifonts.include');
 local updaters = {
@@ -11,37 +10,6 @@ local updaters = {
     ['Trust']       = require('updaters.trust'),
     ['Weaponskill'] = require('updaters.weaponskill'),
 };
-
-local function DoMacro(macro)
-    for _,line in ipairs(macro) do
-        local command, waitTime;
-        if (string.sub(line, 1, 6) == '/wait ') then
-            waitTime = tonumber(string.sub(line, 7));
-        else
-            command = line;
-            local waitStart, waitEnd = string.find(line, ' <wait %d*%.?%d+>');
-            if (waitStart ~= nil) and (waitEnd == string.len(line)) then
-                waitTime = tonumber(string.match(line, ' <wait (%d*%.?%d+)>'));
-                if (type(waitTime) == 'number') then
-                    command = string.sub(line, 1, waitStart - 1);
-                end
-            end
-        end
-
-        if command then
-            AshitaCore:GetChatManager():QueueCommand(-1, encoding:UTF8_To_ShiftJIS(command));
-        end
-        
-        if type(waitTime) == 'number' then
-            if (waitTime < 0.1) then
-                coroutine.sleepf(1);
-            else
-                coroutine.sleep(waitTime);
-            end
-        end
-    end
-end
-
 local Element = {};
 
 function Element:New(hotkey, layout, hotkeyLabel)
@@ -70,11 +38,7 @@ end
 function Element:Activate()
     self.Activation = os.clock();
     if (self.Binding ~= nil) then
-        local macroContainer = T{};
-        for _,entry in ipairs(self.Binding.Macro) do
-            macroContainer:append(entry);
-        end
-        DoMacro:bind1(macroContainer):oncef(0);
+        gMacro:Execute(self.Binding.Macro);
     end
 end
 

@@ -10,6 +10,9 @@ Upon initial login, you can type **/tc** to open a configuration window and conf
 ## Making Macros
 To open the binding interface, simply hold both combo keys and both palette swap keys until a small imgui window pops up.  The default configuration for any controller will have these as L1+L2+R1+R2.  Afterward, you can press any macro combination to create a macro for it.  The macro interface itself requires mouse and keyboard for full customization, but has basic controller support.  To use it with a controller, you can navigate between Scope, Action Type, and Action with dpad up/down.  You can change any of these with dpad left/right, and holding the button down will cycle more rapidly.  Pressing your gamepad's confirm button will bind the macro, and your cancel button will return you to the binding interface to select a different macro.  The top button in your 4 button grouping swaps tabs, but controller cannot modify any settings in the appearance tab directly.
 
+## Macro Concurrency
+By default, macros will execute alongside each other. If you want to cancel all pending macros, you can use the **/tb stop** command. If you prefer the ingame behavior of a new macro cancelling any pending macros, enable the Interrupt Mode checkbox on the Macros tab of the configuration.
+
 ## Macro Combinations
 tCrossBar supports up to 6 combos, each of which has 8 buttons to activate macros.  The combo keys can be bound to other buttons, but for simplicities sake I will refer to them as L2 and R2, which are the default configuration.  The combos are as follows:<br>
 

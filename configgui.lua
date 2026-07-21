@@ -280,10 +280,25 @@ function exposed:Render()
                     imgui.EndTabItem();
                 end
                 
-                if imgui.BeginTabItem('Behavior##tCrossbarConfigBehaviorTab') then
+                
+                if imgui.BeginTabItem('Macros##tCrossbarConfigMacrosTab') then
                     imgui.TextColored(header, 'Macro Elements');
                     CheckBox('Clickable', 'ClickToActivate');
                     imgui.ShowHelp('Makes macros activate when their icon is left clicked.');
+                    imgui.TextColored(header, "Macro Behavior")
+                    CheckBox('Interrupt Mode', 'MacroInterrupt');
+                    imgui.ShowHelp('When enabled, a new macro activation will cancel all pending macros like in the base game.');
+                    CheckBox('Combo Priority', 'EnablePriority');
+                    imgui.ShowHelp('When enabled, pressing LR then R2 will be a seperate set from pressing R2 then L2.  When disabled, order won\'t matter.');
+                    CheckBox('Double Tap', 'EnableDoubleTap');
+                    imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
+                    imgui.TextColored(header, 'Binding Menu');
+                    CheckBox('Default To <st>', 'DefaultSelectTarget');
+                    imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');
+                    imgui.EndTabItem();
+                end
+                
+                if imgui.BeginTabItem('Behavior##tCrossbarConfigBehaviorTab') then
                     imgui.TextColored(header, 'Trigger Duration');
                     local buff = { gSettings.TriggerDuration };
                     if imgui.SliderFloat('##TriggerDurationSlider', buff, 0.01, 1.5, '%.2f', ImGuiSliderFlags_AlwaysClamp) then
@@ -291,6 +306,9 @@ function exposed:Render()
                         settings.save();
                     end
                     imgui.ShowHelp('Determines how long the activation flash occurs for when ShowTrigger is enabled.')
+                    imgui.TextColored(header, 'Idle Display');
+                    CheckBox('Show', 'ShowDoubleDisplay');
+                    imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
                     imgui.TextColored(header, 'Hide UI');
                     CheckBox('While Zoning', 'HideWhileZoning');
                     imgui.ShowHelp('Hides UI while you are zoning or on title screen.');
@@ -300,16 +318,6 @@ function exposed:Render()
                     imgui.ShowHelp('Hides UI while the map is the topmost menu.');
                     CheckBox('While Chat Expanded', 'HideWhileChat');
                     imgui.ShowHelp('Hides UI while the chat window is expanded.');
-                    imgui.TextColored(header, 'Combo Behavior');
-                    CheckBox('Combo Priority', 'EnablePriority');
-                    imgui.ShowHelp('When enabled, pressing LR then R2 will be a seperate set from pressing R2 then L2.  When disabled, order won\'t matter.');
-                    CheckBox('Double Tap', 'EnableDoubleTap');
-                    imgui.ShowHelp('When enabled, a quick double tap then hold of L2 or R2 will produce a seperate macro set from single taps.');
-                    CheckBox('Always Show Double', 'ShowDoubleDisplay');
-                    imgui.ShowHelp('When enabled, your L2 and R2 macros will be shown together while no combo keys are pressed.');
-                    imgui.TextColored(header, 'Binding Menu');
-                    CheckBox('Default To <st>', 'DefaultSelectTarget');
-                    imgui.ShowHelp('When enabled, new bindings that can target anything besides yourself will default to <st>.');
                     imgui.TextColored(header, 'LT-RT Display');
                     imgui.ShowHelp('Determines what should be displayed when using the single LT or single RT macro.');
                     if (imgui.BeginCombo('##tCrossBarLTRTMode', gSettings.LTRTMode, ImGuiComboFlags_None)) then

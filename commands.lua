@@ -30,6 +30,16 @@ ashita.events.register('command', 'command_cb', function (e)
         return;
     end
     
+    if (#args > 1) and (string.lower(args[2]) == 'stop') then
+        local cancelled = gMacro:Abort();
+        if cancelled then
+            Message("All macros cancelled.");
+        else
+            Error("No active macros.");
+        end
+        return;
+    end
+    
     if (#args > 1) and (string.lower(args[2]) == 'hide') then
         gToggleHide = not gToggleHide;
         Message(string.format("Display is now $H%s$R.", gToggleHide and "hidden" or "visible"));
